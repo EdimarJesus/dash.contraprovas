@@ -1,0 +1,2222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - Não Conformidades Contra Provas</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+<style>
+:root{
+  --navy:#063b73;
+  --blue:#0d5ca8;
+  --blue2:#1b76c9;
+  --red:#b51f2a;
+  --orange:#e87d22;
+  --green:#23834b;
+  --ink:#26333f;
+  --muted:#667482;
+  --line:#d9e0e7;
+  --panel:rgba(255,255,255,.93);
+  --panel2:rgba(255,255,255,.78);
+  --shadow:0 10px 28px rgba(24,43,64,.10);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink);background:#edf1f5}
+body{
+  background:
+    radial-gradient(circle at 10% 8%,rgba(181,31,42,.10),transparent 28%),
+    radial-gradient(circle at 90% 20%,rgba(13,92,168,.10),transparent 30%),
+    linear-gradient(135deg,#f5f7f9 0%,#e9edf1 48%,#f7f8f9 100%);
+}
+body:before{
+  content:"";
+  position:fixed;inset:0;pointer-events:none;opacity:.42;
+  background:
+    linear-gradient(110deg,transparent 0 10%,rgba(181,31,42,.07) 10.2% 10.8%,transparent 11% 87%,rgba(13,92,168,.06) 87.2% 88%,transparent 88.2%),
+    linear-gradient(18deg,transparent 0 20%,rgba(37,130,83,.05) 20.2% 21%,transparent 21.2%);
+}
+.container{width:min(1500px,calc(100% - 32px));margin:0 auto;position:relative;z-index:1}
+.topbar{
+  height:68px;background:rgba(255,255,255,.94);border-bottom:4px solid var(--navy);
+  display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(0,0,0,.08)
+}
+.brand{
+  position:absolute;left:22px;display:flex;align-items:center;gap:10px;color:var(--navy);font-weight:800;letter-spacing:.3px
+}
+.brand-mark{width:34px;height:28px;display:flex;align-items:flex-end;gap:3px}
+.brand-mark span{display:block;width:6px;border-radius:2px 2px 0 0}
+.brand-mark span:nth-child(1){height:13px;background:#e53935}
+.brand-mark span:nth-child(2){height:22px;background:#f4b400}
+.brand-mark span:nth-child(3){height:17px;background:#1e88e5}
+.brand-mark span:nth-child(4){height:26px;background:#43a047}
+.brand-mark span:nth-child(5){height:10px;background:#8e24aa}
+.header-center{padding:0 220px}.title{font-size:23px;line-height:1;color:var(--navy);font-weight:900;letter-spacing:.4px;text-align:center}.header-info{position:absolute;right:22px;text-align:right;color:#38526a;font-size:12px;font-weight:800}.header-info small{display:block;color:#7a8792;font-size:9px;font-weight:600;margin-top:2px}
+.subtitle{font-size:12px;color:#71808e;margin-top:4px;text-align:center;font-weight:500}
+.toolbar{
+  margin:18px 0 14px;padding:14px;background:var(--panel);border:1px solid rgba(210,219,227,.9);
+  border-radius:18px;box-shadow:var(--shadow)
+}
+.toolbar-row{display:flex;gap:10px;align-items:end;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:5px;min-width:150px;flex:1}
+.field.small{min-width:125px;flex:0 1 150px}
+.field label{font-size:11px;font-weight:800;color:#5b6874;text-transform:uppercase;letter-spacing:.45px}
+select,input[type=date],input[type=text]{
+  height:38px;border:1px solid #cbd5df;border-radius:10px;background:#fff;padding:0 11px;color:#24313d;outline:none
+}
+select:focus,input:focus{border-color:#4c8ac5;box-shadow:0 0 0 3px rgba(76,138,197,.12)}
+.actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+button{
+  border:0;border-radius:10px;height:38px;padding:0 14px;font-weight:800;cursor:pointer;transition:.18s transform,.18s opacity,.18s box-shadow
+}
+button:hover{transform:translateY(-1px)}
+.btn-primary{background:var(--navy);color:#fff;box-shadow:0 5px 12px rgba(6,59,115,.2)}
+.btn-secondary{background:#eef3f7;color:#274056;border:1px solid #d2dce5}
+.btn-danger{background:#fff0f1;color:#9b2028;border:1px solid #f2c5c8}
+.btn-file{position:relative;overflow:hidden;background:linear-gradient(135deg,#1aa45b,#128b49);color:#fff;box-shadow:0 6px 14px rgba(18,139,73,.22)}
+.import-field{flex:0 0 145px;min-width:145px;position:relative}.import-actions{display:block;position:relative;min-height:38px}.import-file{height:38px;min-width:0;width:145px;padding:0 12px;display:flex!important;align-items:center;justify-content:center!important;gap:7px;border-radius:9px;cursor:pointer;color:#fff!important;font-size:11px}.import-file strong{font-size:11px;line-height:1;color:#fff!important;font-weight:800}.folder-icon{font-size:16px;color:#fff!important}.sheet-picker{position:absolute;left:0;top:42px;width:220px;z-index:30;background:#fff;border:1px solid #cbd6df;border-radius:10px;box-shadow:0 12px 26px rgba(24,43,64,.18);padding:6px}.sheet-picker select{height:36px;width:100%;border:0;outline:0;background:#fff;color:#263b4e;font-size:12px}.sheet-picker select:focus{box-shadow:none}.import-file strong{display:block;font-size:11px;line-height:1}.folder-icon{font-size:17px;color:#fff;transform:rotate(0deg)}
+.btn-file input{position:absolute;inset:0;opacity:0;cursor:pointer}.import-file *{color:#fff!important}
+.status{margin-top:10px;font-size:12px;color:#687786;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.status strong{color:#1d2e3d}
+.breadcrumb{
+  display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:12px 0 15px;padding:10px 13px;
+  background:rgba(255,255,255,.72);border:1px solid #dce3e9;border-radius:12px;font-size:12px
+}
+.crumb{color:#0b5da8;font-weight:800;cursor:pointer}.crumb.active{color:#374553;cursor:default}.sep{color:#9ba8b3}
+.cards{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:14px}
+.card{display:flex;align-items:center;gap:12px;
+  background:var(--panel);border:1px solid #dfe5ea;border-radius:16px;padding:14px 15px;box-shadow:var(--shadow);min-height:96px
+}
+.card-icon{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#eef4fa;color:#0d5ca8;font-weight:900;font-size:20px;flex:0 0 auto}.card-icon svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}.card.red .card-icon{background:#ffe8eb;color:#c82738}.card.orange .card-icon{background:#fff0d8;color:#ed8a11}.card.green .card-icon{background:#e7f7ee;color:#219653}.card.blue .card-icon{background:#e5f1ff;color:#1670d2}.card.purple .card-icon{background:#f0e9ff;color:#7542c8}.card>div:last-child{min-width:0}.card .k{font-size:10px;color:#697783;font-weight:850;text-transform:uppercase;letter-spacing:.55px}
+.card .v{font-size:28px;font-weight:900;color:var(--navy);margin-top:8px;white-space:nowrap}
+.card .s{font-size:11px;color:#778591;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card.red .v{color:var(--red)} .card.orange .v{color:var(--orange)} .card.green .v{color:var(--green)}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px;margin-bottom:18px}
+.panel{
+  background:var(--panel);border:1px solid #dde4ea;border-radius:20px;box-shadow:var(--shadow);padding:13px 14px 10px;
+  min-width:0
+}
+.panel.span-4{grid-column:span 4}.panel.span-5{grid-column:span 5}.panel.span-6{grid-column:span 6}.panel.span-7{grid-column:span 7}.panel.span-8{grid-column:span 8}.panel.span-12{grid-column:span 12}
+.panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin:0 2px 5px}.panel-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+
+.week-date-filter{display:flex;align-items:center;gap:5px;height:30px}
+.date-picker-control{position:relative;display:flex;align-items:center;cursor:pointer}.date-picker-control input{position:relative;z-index:2}
+.date-picker-control input{height:30px;cursor:pointer;width:118px;border:1px solid #cfd9e1;border-radius:8px;background:#fff;color:#27445b;font-size:10px;font-weight:700;padding:0 31px 0 7px}
+.date-picker-control input:focus{outline:none;border-color:#0d5ca8;box-shadow:0 0 0 2px rgba(13,92,168,.10)}
+.date-picker-btn{position:absolute;right:3px;top:3px;z-index:3;width:24px;height:24px;border:0;border-radius:6px;background:#edf4fa;color:#0d5ca8;font-size:12px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.date-picker-btn:hover{background:#dcecf9}
+.week-filter-btn{height:30px;border:1px solid #0d5ca8;border-radius:8px;background:#0d5ca8;color:#fff;padding:0 11px;font-size:10px;font-weight:900;cursor:pointer;display:flex;align-items:center;gap:5px;box-shadow:0 2px 6px rgba(13,92,168,.16)}
+.week-filter-btn:hover{background:#084b8b}
+.week-filter-icon{font-size:15px;line-height:1}
+
+.week-date-filter label{font-size:9px;color:#71808c;font-weight:850;text-transform:uppercase;letter-spacing:.35px}
+.week-date-filter input{height:30px;width:118px;border:1px solid #cfd9e1;border-radius:8px;background:#fff;color:#27445b;font-size:10px;font-weight:700;padding:0 7px}
+.week-date-filter span{font-size:9px;color:#71808c;font-weight:750}
+.ni-toggle{height:30px;display:flex;align-items:center;gap:6px;padding:0 9px;border:1px solid #d7dfe5;border-radius:8px;background:#f7fafc;color:#39556b;font-size:9px;font-weight:850;cursor:pointer;white-space:nowrap}
+.ni-toggle input{position:absolute;opacity:0;pointer-events:none}
+.ni-check{width:15px;height:15px;border:1.5px solid #aebdca;border-radius:4px;background:#fff;display:inline-flex;align-items:center;justify-content:center}
+.ni-toggle input:checked+.ni-check{background:#0d5ca8;border-color:#0d5ca8}
+.ni-toggle input:checked+.ni-check::after{content:"✓";color:#fff;font-size:11px;font-weight:900;line-height:1}
+.leakage-analysis-panel{grid-column:1/-1}
+.leakage-main-head{align-items:center}
+.leakage-filters{flex-wrap:nowrap}
+.leakage-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:4px 0 12px}
+.leak-kpi{min-height:68px;border:1px solid #e1e7ec;border-radius:13px;background:linear-gradient(180deg,#fff,#f8fafc);display:flex;align-items:center;gap:10px;padding:9px 12px}
+.leak-kpi-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;flex:0 0 auto}
+.leak-red{background:#ffe8eb;color:#c82738}.leak-blue{background:#e6f1ff;color:#166fc9}.leak-orange{background:#fff0db;color:#e18416}.leak-green{background:#e6f7ee;color:#209456}
+.leak-kpi span{display:block;font-size:9px;text-transform:uppercase;letter-spacing:.35px;color:#75828d;font-weight:850}
+.leak-kpi strong{display:block;margin-top:3px;color:#123e6c;font-size:17px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px}
+.leakage-grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(340px,.9fr);gap:14px;align-items:stretch}
+.leakage-chart-block,.leakage-month-block{border:1px solid #e2e8ed;border-radius:13px;background:#fbfcfd;padding:7px 9px 5px}
+.leakage-chart-wrap{height:390px!important}
+.leakage-month-wrap{height:300px!important}
+.subchart-title{font-size:11px;color:#2a4b64;font-weight:900;padding:3px 4px 4px}
+
+.mini-filter-label{font-size:9px;color:#71808c;font-weight:850;text-transform:uppercase;letter-spacing:.35px}.mini-filter{height:30px;min-width:150px;max-width:240px;border:1px solid #cfd9e1;border-radius:8px;background:#fff;color:#27445b;font-size:10px;font-weight:750;padding:0 8px}.chart-toggle{height:27px;padding:0 9px;border:1px solid #d3dde5;border-radius:8px;background:#f3f7fa;color:#23445f;font-size:10px;font-weight:850;display:flex;align-items:center;gap:5px;cursor:pointer;box-shadow:none}.chart-toggle:hover{background:#e8f0f5}.chart-toggle span:first-child{font-size:15px;line-height:1;color:#0d5ca8}
+.panel-title{font-size:14px;font-weight:850;color:#3d4a55}
+.panel-note{font-size:10px;color:#7b8792;text-align:right}
+.chart-wrap{height:280px;position:relative}
+.chart-wrap.tall{height:330px}
+.chart-wrap.short{height:235px}
+.empty{
+  position:absolute;inset:30px;display:flex;align-items:center;justify-content:center;text-align:center;
+  color:#7b8792;font-size:12px;border:1px dashed #cbd5de;border-radius:14px;background:rgba(247,249,251,.72)
+}
+.legend-note{font-size:10px;color:#7b8792;margin:4px 2px 0}
+.lot-toolbar{display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin-bottom:8px}
+.lot-toolbar .field{min-width:160px}
+.table-wrap{max-height:330px;overflow:auto;border:1px solid #e0e6eb;border-radius:12px}
+table{width:100%;border-collapse:collapse;font-size:11px;background:#fff}
+th{position:sticky;top:0;background:#f3f6f8;color:#52606c;text-align:left;padding:9px;border-bottom:1px solid #d9e1e7;z-index:1}
+td{padding:8px 9px;border-bottom:1px solid #edf0f2;color:#34424e}
+tr:hover td{background:#f8fafb}
+.right{text-align:right}
+ .pareto-main-head{align-items:flex-start}
+  .pareto-filters{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .pareto-filters .mini-filter{min-width:155px}
+  .pareto-filters .ni-toggle{margin-left:4px}
+  .pareto-chart-wrap{height:540px}
+  .pareto-insight{font-size:11px;color:#5d7085;padding-top:8px}.pareto-insight strong{color:#17334d}
+
+  .pareto-panel .legend-note{margin-top:8px}
+.footer{padding:8px 0 24px;text-align:center;color:#7b8791;font-size:10px}
+.toast{
+  position:fixed;right:18px;bottom:18px;z-index:20;background:#23313d;color:#fff;padding:11px 14px;border-radius:10px;
+  box-shadow:0 12px 30px rgba(0,0,0,.22);font-size:12px;opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s
+}
+.toast.show{opacity:1;transform:translateY(0)}
+.hidden{display:none!important}
+.print-only{display:none!important}
+@media(max-width:1200px){
+  .cards{grid-template-columns:repeat(3,1fr)}
+  .panel.span-4,.panel.span-5,.panel.span-6,.panel.span-7,.panel.span-8{grid-column:span 6}
+}
+@media(max-width:760px){
+  .week-actions{width:100%;justify-content:flex-start;flex-wrap:wrap}.week-date-filter{width:100%;flex-wrap:wrap}.date-picker-control input{width:118px}.week-filter-btn{padding:0 9px}
+  .leakage-kpis{grid-template-columns:repeat(2,1fr)}.leakage-grid{grid-template-columns:1fr}.leakage-filters{width:100%;justify-content:flex-start}.leakage-main-head{align-items:flex-start}.leak-kpi strong{max-width:150px}
+  .panel-actions{flex-wrap:wrap}.mini-filter{min-width:130px}
+  .panel-actions{gap:5px}.panel-note{max-width:140px}.chart-toggle{padding:0 7px}
+  .import-file{width:145px}.sheet-picker{width:220px;min-width:220px}
+  .header-center{padding:0 8px}.header-info{display:none}
+  .container{width:min(100% - 16px,1500px)}
+  .topbar{height:auto;min-height:76px;padding:12px 10px}
+  .brand{display:none}.title{font-size:18px}.subtitle{font-size:10px}
+  .cards{grid-template-columns:repeat(2,1fr);gap:8px}.card{display:flex;align-items:center;gap:12px;padding:11px;min-height:84px}.card .v{font-size:22px}
+  .panel.span-4,.panel.span-5,.panel.span-6,.panel.span-7,.panel.span-8,.panel.span-12{grid-column:span 12}
+  .chart-wrap,.chart-wrap.tall{height:270px}
+  .toolbar{padding:10px}.field,.field.small{min-width:calc(50% - 5px)}
+}
+@media(max-width:480px){
+  .field,.field.small{min-width:100%}.actions{width:100%}.actions button{flex:1}
+  .cards{grid-template-columns:1fr 1fr}
+}
+
+.pdf-select-modal{position:fixed;inset:0;z-index:110;display:flex;align-items:center;justify-content:center;padding:22px}
+.pdf-select-modal.hidden{display:none}
+.pdf-select-backdrop{position:absolute;inset:0;background:rgba(12,30,48,.58);backdrop-filter:blur(3px)}
+.pdf-select-dialog{position:relative;width:min(720px,94vw);max-height:88vh;background:#fff;border-radius:20px;box-shadow:0 24px 70px rgba(0,0,0,.30);overflow:hidden;display:flex;flex-direction:column}
+.pdf-select-header{padding:18px 20px 14px;background:linear-gradient(135deg,#f7fafc,#eef4f8);border-bottom:1px solid #dce4ea;display:flex;justify-content:space-between;gap:15px}
+.pdf-select-header h2{margin:0;color:#123e6c;font-size:20px}
+.pdf-select-context{font-size:10px;color:#71808c;margin-top:4px}
+.pdf-select-tools{display:flex;gap:8px;padding:12px 18px;border-bottom:1px solid #edf1f4}
+.pdf-select-list{padding:12px 18px;overflow:auto;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pdf-select-section{grid-column:1/-1;font-size:10px;font-weight:900;color:#123e6c;text-transform:uppercase;letter-spacing:.5px;padding:3px 2px 0}
+.pdf-select-item{display:grid;grid-template-columns:18px 1fr;grid-template-rows:auto auto;align-items:start;gap:6px 9px;padding:9px;border:1px solid #dce4ea;border-radius:10px;background:#fbfcfd;cursor:pointer;transition:.15s}
+.pdf-select-item:hover{background:#f4f8fb;border-color:#bfd0dc}
+.pdf-select-item input{width:16px;height:16px;accent-color:#0d5ca8;cursor:pointer;grid-row:1/3;margin-top:2px}
+.pdf-select-item span{font-size:11px;font-weight:800;color:#29465c;line-height:1.25}
+.pdf-preview{grid-column:2;width:100%;height:82px;object-fit:contain;object-position:center;background:#fff;border:1px solid #e4e9ed;border-radius:7px;display:block}
+.pdf-card-preview{grid-column:2;width:100%;height:70px;object-fit:contain;object-position:center;background:#fff;border:1px solid #e4e9ed;border-radius:7px;display:block}
+.pdf-preview-empty{grid-column:2;width:100%;height:82px;border:1px dashed #cbd6df;border-radius:7px;background:#f6f8fa;color:#8a98a4;display:flex;align-items:center;justify-content:center;font-size:9px}
+.pdf-select-item input:checked + span{color:#123e6c}
+.pdf-select-card-row{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pdf-select-card-row .pdf-select-item{min-width:0}
+.pdf-select-footer{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 18px;border-top:1px solid #dce4ea;background:#f8fafb}
+.pdf-select-actions{display:flex;gap:8px}
+@media(max-width:760px){.pdf-select-list{grid-template-columns:1fr}.pdf-select-footer{align-items:flex-start;flex-direction:column}.pdf-select-actions{width:100%}.pdf-select-actions button{flex:1}}
+
+.detail-modal{position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;padding:22px}
+.detail-modal.hidden{display:none}
+.detail-backdrop{position:absolute;inset:0;background:rgba(12,30,48,.58);backdrop-filter:blur(3px)}
+.detail-dialog{position:relative;width:min(1450px,96vw);max-height:92vh;background:#fff;border-radius:20px;box-shadow:0 24px 70px rgba(0,0,0,.30);overflow:hidden;display:flex;flex-direction:column}
+.detail-header{padding:18px 20px 14px;background:linear-gradient(135deg,#f7fafc,#eef4f8);border-bottom:1px solid #dce4ea;display:flex;justify-content:space-between;gap:15px}
+.detail-kicker{font-size:9px;font-weight:900;letter-spacing:1px;color:#0d5ca8;margin-bottom:4px}
+.detail-header h2{margin:0;color:#123e6c;font-size:21px;line-height:1.15}
+.detail-context{margin-top:5px;font-size:11px;color:#687783}
+.detail-close{width:36px;height:36px;border-radius:50%;background:#fff;border:1px solid #d5dee6;color:#536574;font-size:25px;line-height:1;cursor:pointer}
+.detail-summary{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:14px 18px}
+.detail-stat{border:1px solid #e0e6eb;border-radius:12px;padding:10px 12px;background:#fafcfd}
+.detail-stat .label{font-size:9px;color:#71808c;text-transform:uppercase;font-weight:850;letter-spacing:.45px}
+.detail-stat .value{font-size:18px;color:#103f70;font-weight:900;margin-top:4px}
+.detail-table-wrap{margin:0 18px 12px;border:1px solid #dce4ea;border-radius:12px;overflow:auto;max-height:53vh}
+.detail-table{width:100%;border-collapse:collapse;font-size:10px;min-width:1050px}
+.detail-table th{position:sticky;top:0;background:#edf3f7;color:#4e6070;padding:9px 8px;text-align:left;border-bottom:1px solid #d5dfe6;z-index:2}
+.detail-table td{padding:8px;border-bottom:1px solid #edf0f2;color:#334451;vertical-align:top}
+.detail-table tbody tr:hover td{background:#f7fafc}
+.detail-footer{padding:9px 18px 15px;color:#6f7d88;font-size:10px;text-align:right}
+@media(max-width:760px){
+  .leakage-kpis{grid-template-columns:repeat(2,1fr)}.leakage-grid{grid-template-columns:1fr}.leakage-filters{width:100%;justify-content:flex-start}.leakage-main-head{align-items:flex-start}.leak-kpi strong{max-width:150px}
+  .detail-modal{padding:8px}.detail-dialog{width:100%;max-height:96vh}.detail-summary{grid-template-columns:repeat(2,1fr)}
+}
+
+@media print{
+  @page{size:A4 portrait;margin:8mm 7mm 15mm}
+  html,body{background:#fff!important;color:#1f2f3d!important}
+  body{margin:0!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  .detail-modal,.toolbar,.breadcrumb,.footer,.toast{display:none!important}
+  .pdf-page-footer{display:block!important;position:fixed!important;left:0!important;right:0!important;bottom:2mm!important;text-align:center!important;color:#6f7d88!important;font-size:7px!important;font-weight:600!important;line-height:1!important;z-index:9999!important;background:#fff!important;padding:0!important}
+  .cards{display:flex!important;flex-wrap:wrap!important;gap:2.5mm!important;margin:4mm 0 5mm!important;width:100%!important}
+  .cards .card{display:none!important;min-width:0!important;min-height:18mm!important;padding:2.5mm!important;gap:2mm!important;border:1px solid #d7e0e7!important;border-radius:5mm!important;background:#fff!important;box-shadow:none!important}
+  .cards .card-icon{width:8mm!important;height:8mm!important;flex:0 0 8mm!important}
+  .cards .card-icon svg{width:5mm!important;height:5mm!important}
+  .cards .card .k{font-size:5.8pt!important;line-height:1.05!important}
+  .cards .card .v{font-size:13pt!important;margin-top:1mm!important;line-height:1!important}
+  .cards .card .s{font-size:5.5pt!important;margin-top:1mm!important}
+  .cards .card.pdf-card.print-card-selected{display:flex!important;flex:1 1 30mm!important;min-width:26mm!important}
+  .topbar{height:auto!important;min-height:0!important;padding:0 0 5mm!important;margin-bottom:3mm!important;background:#fff!important;color:#17334d!important;border-bottom:1px solid #d7e0e7!important;box-shadow:none!important;display:flex!important;align-items:flex-end!important}
+  .topbar .brand{display:none!important}
+  .header-center{padding:0!important;flex:1;text-align:center}
+  .header-center .title{font-size:12px!important;font-weight:900!important;color:#17334d!important;letter-spacing:.2px}
+  .header-center .subtitle{font-size:8px!important;color:#667785!important;margin-top:1mm!important}
+  .header-info{display:block!important;text-align:right!important;color:#526575!important;min-width:105px}
+  .header-info div{font-size:7px!important}
+  .header-info small{font-size:6px!important}
+  .container{width:100%!important;max-width:none!important;margin:0!important;padding:0!important}
+  .grid{display:block!important;margin:0!important}
+  .grid > .panel{display:none!important}
+  .grid > .panel.print-selected{display:block!important;width:100%!important;grid-column:auto!important;margin:0 0 5mm!important;padding:3mm 3mm 2.5mm!important;background:#fff!important;border:1px solid #d7e0e7!important;border-radius:7px!important;box-shadow:none!important;break-inside:avoid!important;page-break-inside:avoid!important;overflow:visible!important}
+  .panel-head{display:block!important;margin:0 0 1.5mm!important;padding:0!important}
+  .panel-title{font-size:10.5px!important;font-weight:900!important;color:#17334d!important;text-align:left!important;line-height:1.15!important}
+  .panel-note{font-size:6.5px!important;color:#758491!important;text-align:left!important;margin-top:.7mm!important;max-width:none!important;line-height:1.15!important}
+  .print-only{display:block!important}
+  .panel-actions{display:none!important}
+  .chart-wrap{height:72mm!important;position:relative!important;width:100%!important}
+  .chart-wrap.tall{height:78mm!important}
+  .chart-wrap.short{height:62mm!important}
+
+  /* Gráfico de pizza: área quadrada e centralizada no PDF.
+     Evita que o canvas seja esticado horizontalmente pela largura A4. */
+  .print-chart[data-chart-id="shiftPct"] .chart-wrap{
+    width:82mm!important;
+    height:82mm!important;
+    min-width:82mm!important;
+    min-height:82mm!important;
+    margin:0 auto!important;
+    display:flex!important;
+    align-items:center!important;
+    justify-content:center!important;
+    position:relative!important;
+    flex:0 0 82mm!important;
+  }
+  .print-chart[data-chart-id="shiftPct"] .chart-wrap > canvas{
+    width:82mm!important;
+    height:82mm!important;
+    min-width:82mm!important;
+    min-height:82mm!important;
+    max-width:82mm!important;
+    max-height:82mm!important;
+    aspect-ratio:1 / 1!important;
+    margin:0!important;
+    display:block!important;
+  }
+  .leakage-chart-wrap{height:78mm!important}
+  .leakage-month-wrap{height:60mm!important}
+  .pareto-chart-wrap{height:88mm!important}
+  .leakage-kpis{display:none!important}
+  .leakage-grid{display:grid!important;grid-template-columns:minmax(0,1.65fr) minmax(0,.95fr)!important;gap:4mm!important}
+  .leakage-chart-block,.leakage-month-block{padding:1mm!important;background:#fff!important;border:0!important;min-width:0!important}
+  .subchart-title{font-size:7px!important;padding:0 0 1mm!important}
+  .legend-note{font-size:6.2px!important;color:#758491!important;margin-top:1mm!important;line-height:1.15!important}
+  .pareto-insight{font-size:6.2px!important;padding-top:1mm!important}
+  .lot-toolbar,.grid > .panel:not(.print-selected){display:none!important}
+  .print-chart .chart-wrap > canvas{display:block!important;width:100%!important;height:100%!important;max-width:none!important}
+  .print-chart .chart-wrap{overflow:hidden!important}
+  .pareto-panel .chart-wrap{overflow:visible!important}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><div class="brand-mark"><span></span><span></span><span></span><span></span><span></span></div><div><div>NOVA GOIÁS</div><div class="brand-sub">GESTÃO OPERACIONAL</div></div></div>
+  <div class="header-center">
+    <div class="title">DASHBOARD - NÃO CONFORMIDADES CONTRA PROVAS</div>
+    <div class="subtitle" id="periodSubtitle">Aguardando importação da planilha BASE</div>
+  </div>
+  <div class="header-info"><div id="headerDate">—</div><small>Dados da planilha</small></div>
+</header>
+
+<main class="container">
+  <section class="toolbar">
+    <div class="toolbar-row">
+      <div class="field import-field"><label>Planilha</label><div class="import-actions"><label class="btn-file import-file"><span class="folder-icon">▰</span><span><strong>Importar planilha</strong></span><input id="fileInput" type="file" accept=".xlsx,.xls"></label><div id="sheetPickerWrap" class="sheet-picker hidden"><select id="sheetSelect" aria-label="Escolher aba da planilha"><option value="">Escolha a aba da planilha</option></select></div></div></div>
+      <div class="field small"><label>Período inicial</label><input id="dateStart" type="date"></div>
+      <div class="field small"><label>Período final</label><input id="dateEnd" type="date"></div>
+      <div class="field"><label>Produto</label><select id="productFilter"><option value="">Todos</option></select></div>
+      <div class="field small"><label>Máquina</label><select id="machineFilter"><option value="">Todas</option></select></div>
+      <div class="field small"><label>Turno</label><select id="shiftFilter"><option value="">Todos</option><option value="1">Turno 1</option><option value="2">Turno 2</option><option value="3">Turno 3</option></select></div>
+      <div class="field"><label>Lote</label><select id="lotFilter"><option value="">Todos</option></select></div>
+      <div class="field"><label>Defeito N1</label><select id="n1Filter"><option value="">Todos</option></select></div>
+      <div class="field"><label>Defeito N2</label><select id="n2Filter"><option value="">Todos</option></select></div>
+      <div class="field"><label>Defeito N3</label><select id="n3Filter"><option value="">Todos</option></select></div>
+      <div class="actions">
+        <button class="btn-primary" id="applyBtn">Aplicar filtros</button>
+        <button class="btn-secondary" id="clearBtn">Limpar filtros</button>
+        <button class="btn-secondary" id="saveBtn">Gerar HTML</button>
+        <button class="btn-secondary" id="printBtn">Gerar PDF</button>
+      </div>
+    </div>
+    <div class="status">
+      <span id="fileStatus">Nenhuma planilha carregada.</span>
+      <span id="resultStatus">Registros analisados: <strong>0</strong></span>
+    </div>
+  </section>
+
+  <div class="breadcrumb" id="breadcrumb">
+    <span class="crumb active">Todos os defeitos</span>
+  </div>
+
+  <section class="cards">
+    <div class="card red pdf-card" data-card-id="total"><div class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v6"></path><circle cx="12" cy="16.5" r=".8" fill="currentColor" stroke="none"></circle></svg></div><div><div class="k">Total de NC</div><div class="v" id="cardTotal">0</div><div class="s">registros</div></div></div>
+    <div class="card orange pdf-card" data-card-id="products"><div class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v13H4z"></path><path d="M8 4h8v3H8z"></path><path d="M8 11h8M8 15h5"></path></svg></div><div><div class="k">Produtos afetados</div><div class="v" id="cardProducts">0</div><div class="s">produtos</div></div></div>
+    <div class="card purple pdf-card" data-card-id="machines"><div class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="14" rx="2"></rect><path d="M8 9h8M8 13h8M8 17h5"></path></svg></div><div><div class="k">Máquinas afetadas</div><div class="v" id="cardMachines">0</div><div class="s">máquinas</div></div></div>
+    <div class="card green pdf-card" data-card-id="lots"><div class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14v12H5z"></path><path d="M8 4h8v3H8zM8 10h8M8 14h8"></path></svg></div><div><div class="k">Lotes afetados</div><div class="v" id="cardLots">0</div><div class="s">lotes</div></div></div>
+    <div class="card blue pdf-card" data-card-id="bicos"><div class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3s6 7 6 11a6 6 0 0 1-12 0c0-4 6-11 6-11z"></path><path d="M9 15c.4 1.2 1.4 2 3 2"></path></svg></div><div><div class="k">Bicos com vazamento</div><div class="v" id="cardBicos">0</div><div class="s">registros</div></div></div>
+    <div class="card red pdf-card" data-card-id="shift"><div class="card-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7"></circle><path d="M12 8v8"></path></svg></div><div><div class="k">Turno com maior NC</div><div class="v" id="cardShift">—</div><div class="s" id="cardShiftSub">0% do total</div></div></div>
+  </section>
+
+  <section class="grid">
+    <div class="panel span-4 print-chart" data-chart-id="defect" data-chart-title="Quantidade por tipo de NC">
+      <div class="panel-head"><div class="panel-title" id="defectTitle">Quantidade por tipo de NC</div><div class="panel-note">Clique para descer na hierarquia</div></div>
+      <div class="chart-wrap"><canvas id="defectChart"></canvas><div id="defectEmpty" class="empty hidden">Nenhum defeito encontrado.</div></div>
+      <div class="legend-note">N1 → N2 → N3. A seleção também filtra os demais gráficos.</div>
+    </div>
+    <div class="panel span-4 print-chart" data-chart-id="shiftPct" data-chart-title="% de NC de vazamento por turno">
+      <div class="panel-head"><div class="panel-title">% de NC de vazamento por turno</div><div class="panel-note">Participação no contexto atual</div></div>
+      <div class="chart-wrap"><canvas id="shiftPctChart"></canvas><div id="shiftPctEmpty" class="empty hidden">Nenhum registro encontrado.</div></div>
+    </div>
+    <div class="panel span-4 print-chart" data-chart-id="product" data-chart-title="Quantidade de NC por produto">
+      <div class="panel-head"><div class="panel-title">Quantidade de NC por produto</div><div class="panel-note">Registro Visível</div></div>
+      <div class="chart-wrap"><canvas id="productChart"></canvas><div id="productEmpty" class="empty hidden">Nenhum produto encontrado.</div></div>
+    </div>
+
+    <div class="panel span-6 print-chart" data-chart-id="machine" data-chart-title="Registros por máquina">
+      <div class="panel-head"><div class="panel-title">Registros por máquina</div><div class="panel-note">Registro Visível</div></div>
+      <div class="chart-wrap"><canvas id="machineChart"></canvas><div id="machineEmpty" class="empty hidden">Nenhuma máquina encontrada.</div></div>
+    </div>
+    <div class="panel span-6 print-chart" data-chart-id="month" data-chart-title="Tendência de NC por mês">
+      <div class="panel-head"><div class="panel-title">Tendência de NC por mês</div><div class="panel-note">MÊS da BASE</div></div>
+      <div class="chart-wrap"><canvas id="monthChart"></canvas><div id="monthEmpty" class="empty hidden">Nenhum mês encontrado.</div></div>
+    </div>
+
+    <div class="panel span-6 print-chart" data-chart-id="week" data-chart-title="NC por semana">
+      <div class="panel-head week-panel-head">
+        <div class="panel-title">NC por semana</div>
+        <div class="panel-note print-only" id="weekPrintNote">Período aplicado: —</div>
+        <div class="panel-actions week-actions">
+          <div class="week-date-filter">
+            <label for="weekStartDate">Período</label>
+            <div class="date-picker-control">
+              <input type="date" id="weekStartDate" title="Data inicial do gráfico NC por semana">
+              <button type="button" class="date-picker-btn" id="weekStartPicker" title="Abrir calendário" aria-label="Abrir calendário da data inicial">▣</button>
+            </div>
+            <span>até</span>
+            <div class="date-picker-control">
+              <input type="date" id="weekEndDate" title="Data final do gráfico NC por semana">
+              <button type="button" class="date-picker-btn" id="weekEndPicker" title="Abrir calendário" aria-label="Abrir calendário da data final">▣</button>
+            </div>
+            <button type="button" class="week-filter-btn" id="weekApplyFilter" title="Aplicar período ao gráfico">
+              <span class="week-filter-icon">⌕</span> Filtrar
+            </button>
+          </div>
+          <div class="panel-note">SEMANA da BASE</div>
+          <button type="button" class="chart-toggle" id="weekToggle" title="Alternar entre barras e linha" aria-label="Alternar entre barras e linha"><span id="weekToggleIcon">⌁</span><span id="weekToggleText">Linha</span></button>
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="weekChart"></canvas><div id="weekEmpty" class="empty hidden">Nenhuma semana encontrada.</div></div>
+    </div>
+    <div class="panel span-6 print-chart" data-chart-id="bicoMonth" data-chart-title="Bicos com vazamento por mês">
+      <div class="panel-head"><div class="panel-title">Bicos com vazamento por mês</div><div class="panel-note">Bico Visível × MÊS</div></div>
+      <div class="chart-wrap"><canvas id="bicoMonthChart"></canvas><div id="bicoMonthEmpty" class="empty hidden">Nenhum dado encontrado.</div></div>
+    </div>
+    <div class="panel span-12 leakage-analysis-panel print-chart" data-chart-id="leakage" data-chart-title="Vazamentos por bico">
+      <div class="panel-head leakage-main-head">
+        <div>
+          <div class="panel-title">Vazamentos por bico</div>
+          <div class="panel-note" id="bicoAnalysisTitle">Selecione uma máquina e, se desejar, um produto.</div>
+        </div>
+        <div class="panel-actions leakage-filters">
+          <label class="mini-filter-label" for="bicoMachineSelect">Máquina</label>
+          <select id="bicoMachineSelect" class="mini-filter"><option value="">Selecione uma máquina</option></select>
+          <label class="mini-filter-label" for="bicoProductSelect">Produto</label>
+          <select id="bicoProductSelect" class="mini-filter product-filter"><option value="">Todos os produtos</option></select>
+          <label class="ni-toggle" title="Excluir bicos não identificados (NI) da análise">
+            <input type="checkbox" id="excludeNIBico">
+            <span class="ni-check"></span><span>Excluir NI</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="leakage-kpis">
+        <div class="leak-kpi">
+          <div class="leak-kpi-icon leak-red">!</div>
+          <div><span>Total de vazamentos</span><strong id="leakTotal">0</strong></div>
+        </div>
+        <div class="leak-kpi">
+          <div class="leak-kpi-icon leak-blue">▥</div>
+          <div><span>Bicos com vazamento</span><strong id="leakBicos">0</strong></div>
+        </div>
+        <div class="leak-kpi">
+          <div class="leak-kpi-icon leak-orange">◆</div>
+          <div><span>Bico com maior ocorrência</span><strong id="leakTopBico">—</strong></div>
+        </div>
+        <div class="leak-kpi">
+          <div class="leak-kpi-icon leak-green">%</div>
+          <div><span>Participação do maior bico</span><strong id="leakTopShare">0%</strong></div>
+        </div>
+      </div>
+
+      <div class="leakage-grid">
+        <div class="leakage-chart-block">
+          <div class="chart-wrap leakage-chart-wrap" id="bicoMachineWrap">
+            <canvas id="bicoMachineChart"></canvas>
+            <div id="bicoMachineEmpty" class="empty">Selecione uma máquina para visualizar os bicos com vazamento.</div>
+          </div>
+        </div>
+        <div class="leakage-month-block">
+          <div class="subchart-title">Evolução dos vazamentos por mês</div>
+          <div class="chart-wrap leakage-month-wrap">
+            <canvas id="bicoLeakMonthChart"></canvas>
+            <div id="bicoLeakMonthEmpty" class="empty">Selecione uma máquina para visualizar a evolução mensal.</div>
+          </div>
+        </div>
+      </div>
+      <div class="legend-note" id="bicoMachineNote">O gráfico mostra todos os bicos da máquina selecionada. O filtro de produto também é aplicado.</div>
+    </div>
+
+    <div class="panel span-12 pareto-panel print-chart" data-chart-id="pareto" data-chart-title="Pareto de NC por equipamento">
+      <div class="panel-head pareto-main-head">
+        <div>
+          <div class="panel-title" id="paretoTitle">Pareto de NC por equipamento</div>
+          <div class="panel-note" id="paretoSubtitle">Selecione um equipamento para visualizar o Pareto dos bicos com NC.</div>
+        </div>
+        <div class="panel-actions pareto-filters">
+          <label class="mini-filter-label" for="paretoEquipmentSelect">Equipamento</label>
+          <select id="paretoEquipmentSelect" class="mini-filter">
+            <option value="">Selecione um equipamento</option>
+          </select>
+          <label class="ni-toggle pareto-ni-toggle" title="Excluir bicos não identificados (NI)">
+            <input type="checkbox" id="paretoExcludeNI">
+            <span class="ni-check"></span><span>Excluir NI</span>
+          </label>
+        </div>
+      </div>
+      <div class="chart-wrap pareto-chart-wrap">
+        <canvas id="paretoBicoChart"></canvas>
+        <div id="paretoBicoEmpty" class="empty">Selecione um equipamento para visualizar o Pareto dos bicos.</div>
+      </div>
+      <div id="paretoInsight" class="legend-note pareto-insight">Selecione um equipamento para visualizar a concentração das NCs.</div>
+    </div>
+
+    <div class="panel span-12">
+      <div class="panel-head"><div class="panel-title">NC por lote</div><div class="panel-note">Ranking dos lotes no contexto filtrado</div></div>
+      <div class="lot-toolbar">
+        <div class="field"><label>Pesquisar lote</label><input id="lotSearch" type="text" placeholder="Digite parte do lote"></div>
+        <div class="field small"><label>Exibir</label><select id="lotLimit"><option value="20">20</option><option value="50">50</option><option value="100">100</option><option value="all">Todos</option></select></div>
+      </div>
+      <div class="table-wrap"><table><thead><tr><th>Lote</th><th>Produto</th><th>Máquina</th><th>Turno</th><th class="right">NC</th></tr></thead><tbody id="lotTableBody"><tr><td colspan="5" style="text-align:center;color:#7b8792">Importe a planilha para visualizar os lotes.</td></tr></tbody></table></div>
+    </div>
+  </section>
+
+  <div class="footer">Dashboard analítico · INOV CARGO · Fonte: aba BASE da planilha de Não Conformidades Contra Provas</div>
+</main>
+
+<div class="pdf-page-footer">Dashboard Nao Conformidades de Contra-Provas Gerado por Maiqui Fernandes</div>
+
+<div id="pdfSelectModal" class="pdf-select-modal hidden" aria-hidden="true">
+  <div class="pdf-select-backdrop" id="pdfSelectBackdrop"></div>
+  <section class="pdf-select-dialog" role="dialog" aria-modal="true" aria-labelledby="pdfSelectTitle">
+    <div class="pdf-select-header">
+      <div>
+        <div class="detail-kicker">GERAÇÃO DE PDF</div>
+        <h2 id="pdfSelectTitle">Escolha os gráficos do relatório</h2>
+        <div class="pdf-select-context">Selecione somente as análises que deseja levar para o PDF.</div>
+      </div>
+      <button type="button" class="detail-close" id="pdfSelectClose" aria-label="Fechar">×</button>
+    </div>
+    <div class="pdf-select-tools">
+      <button type="button" class="btn-secondary" id="pdfSelectAll">Selecionar todos</button>
+      <button type="button" class="btn-secondary" id="pdfSelectNone">Limpar seleção</button>
+    </div>
+    <div class="pdf-select-list" id="pdfSelectList"></div>
+    <div class="pdf-select-footer">
+      <span id="pdfSelectCount">0 itens selecionados</span>
+      <div class="pdf-select-actions">
+        <button type="button" class="btn-secondary" id="pdfSelectCancel">Cancelar</button>
+        <button type="button" class="btn-primary" id="pdfGenerateBtn">Gerar PDF</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="detailModal" class="detail-modal hidden" aria-hidden="true">
+  <div class="detail-backdrop" id="detailBackdrop"></div>
+  <section class="detail-dialog" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+    <div class="detail-header">
+      <div>
+        <div class="detail-kicker">DETALHAMENTO DO ITEM SELECIONADO</div>
+        <h2 id="detailTitle">Detalhes</h2>
+        <div id="detailContext" class="detail-context">—</div>
+      </div>
+      <button type="button" class="detail-close" id="detailClose" aria-label="Fechar">×</button>
+    </div>
+    <div class="detail-summary" id="detailSummary"></div>
+    <div class="detail-table-wrap">
+      <table class="detail-table">
+        <thead>
+          <tr>
+            <th>Data revisão</th>
+            <th>Produto</th>
+            <th>Data produção</th>
+            <th>Máquina</th>
+            <th>Turno</th>
+            <th>Lote</th>
+            <th>Defeito N1</th>
+            <th>Defeito N2</th>
+            <th>Defeito N3</th>
+            <th>Bico</th>
+            <th>Observação</th>
+          </tr>
+        </thead>
+        <tbody id="detailTableBody"></tbody>
+      </table>
+    </div>
+    <div class="detail-footer" id="detailFooter"></div>
+  </section>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  "use strict";
+  if (window.ChartDataLabels) Chart.register(ChartDataLabels);
+
+  const MONTHS = ["jan","fev","mar","abr","mai","jun","jul","ago","set","out","nov","dez"];
+  const MONTH_LABELS = {jan:"Janeiro",fev:"Fevereiro",mar:"Março",abr:"Abril",mai:"Maio",jun:"Junho",jul:"Julho",ago:"Agosto",set:"Setembro",out:"Outubro",nov:"Novembro",dez:"Dezembro"};
+
+  let rawRows = [];
+  let filteredRows = [];
+  let charts = {};
+  let hierarchy = [];
+  let currentFileName = "";
+  let embeddedData = null;
+  let weekChartMode = "bar";
+  let bicoMachineSelected = "";
+  let bicoProductSelected = "";
+  let excludeNIBico = false;
+  let paretoExcludeNI = false;
+  let paretoEquipmentSelected = "";
+  let weekStartDate = "";
+  let weekEndDate = "";
+  let weekAppliedStartDate = "";
+  let weekAppliedEndDate = "";
+
+  const $ = id => document.getElementById(id);
+  const normalize = v => String(v ?? "").trim();
+  const keyNormalize = v => normalize(v).replace(/\s+/g," ").toUpperCase();
+
+  function parseDate(v){
+    if(v instanceof Date && !isNaN(v)) return new Date(v.getFullYear(),v.getMonth(),v.getDate());
+    if(typeof v === "number"){
+      const epoch = new Date(Date.UTC(1899,11,30));
+      return new Date(epoch.getTime() + v*86400000);
+    }
+    const s = normalize(v);
+    if(!s) return null;
+    let m = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+    if(m) return new Date(+m[3],+m[2]-1,+m[1]);
+    const d = new Date(s);
+    return isNaN(d) ? null : new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  }
+  function dateISO(d){ return d ? `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}` : ""; }
+  function formatDate(d){ return d ? d.toLocaleDateString("pt-BR") : "—"; }
+  function numeric(v){
+    if(typeof v === "number") return v;
+    const s = normalize(v).replace(/\./g,"").replace(",",".");
+    const n = Number(s);
+    return Number.isFinite(n) ? n : 0;
+  }
+  function visibleValue(v){ return numeric(v); }
+
+  function normalizeHeaderKey(v){
+    return normalize(v).replace(/\\n/g," ").replace(/\\s+/g," ").toUpperCase();
+  }
+
+  function firstValue(out, aliases){
+    for(const alias of aliases){
+      const key=normalizeHeaderKey(alias);
+      if(Object.prototype.hasOwnProperty.call(out,key) && out[key]!=="" && out[key]!=null){
+        return out[key];
+      }
+    }
+    return "";
+  }
+
+  function normalizeRow(obj){
+    const out = {};
+    Object.keys(obj).forEach(k => {
+      const nk = normalizeHeaderKey(k);
+      if(!Object.prototype.hasOwnProperty.call(out,nk) || out[nk]==="" || out[nk]==null){
+        out[nk] = obj[k];
+      }
+    });
+
+    const revisionRaw = firstValue(out,[
+      "DATA DE REVISÃO","DATA DA REVISÃO","DATA REVISÃO","DATA"
+    ]);
+    const productRaw = firstValue(out,[
+      "PRODUTO","SKU","DESCRIÇÃO SKU","MATERIAL"
+    ]);
+    const bicoRaw = firstValue(out,[
+      "BICO COM VAZAMENTO","BICO","BICO VAZAMENTO","BICO PADRONIZADO"
+    ]);
+
+    return {
+      revisionDate: parseDate(revisionRaw),
+      month: normalize(firstValue(out,["MÊS","MÊS DA REVISÃO","MÊS REVISÃO"])).toLowerCase(),
+      year: numeric(firstValue(out,["ANO","ANO DA REVISÃO"])),
+      product: normalize(productRaw),
+      productionDate: parseDate(firstValue(out,["DATA DE PRODUÇÃO","DATA PRODUÇÃO","DATA DA PRODUÇÃO"])),
+      machine: normalize(firstValue(out,["MÁQUINA","EQUIPAMENTO","EQUIPAMENTO/MÁQUINA"])),
+      time: firstValue(out,["HORÁRIO","HORA","HORA DA REVISÃO"]),
+      shift: normalize(firstValue(out,["TURNO","TURNO DA REVISÃO"])),
+      lot: normalize(firstValue(out,["LOTE","Nº LOTE","LOTE PRODUÇÃO"])),
+      hu: normalize(firstValue(out,["HU","UNIDADE HANDLING","UNIDADE DE MANUSEIO"])),
+      bico: normalize(bicoRaw),
+      n1: normalize(firstValue(out,["DEFEITO N1","N1","NÍVEL 1","DEFEITO 1"])),
+      n2: normalize(firstValue(out,["DEFEITO N2","N2","NÍVEL 2","DEFEITO 2"])),
+      n3: normalize(firstValue(out,["DEFEITO N3","N3","NÍVEL 3","DEFEITO 3"])),
+      observation: normalize(firstValue(out,["OBSERVAÇÃO","OBSERVAÇÃO/COMENTÁRIO","COMENTÁRIO"])),
+      bicoPadronizado: normalize(firstValue(out,["BICO PADRONIZADO","BICO COM VAZAMENTO","BICO"])),
+      machineDistinct: numeric(firstValue(out,["MÁQUINA DISTINTA","EQUIPAMENTO DISTINTO"])),
+      registroVisivel: visibleValue(firstValue(out,["REGISTRO VISÍVEL","REGISTRO"])),
+      bicoVisivel: visibleValue(firstValue(out,["BICO VISÍVEL","BICO"])),
+      id2: normalize(firstValue(out,["ID2","ID 2"])),
+      week: normalize(firstValue(out,["SEMANA","SEMANA DA REVISÃO"]))
+    };
+  }
+
+  function detectHeaderRow(sheet){
+    const matrix=XLSX.utils.sheet_to_json(sheet,{header:1,defval:"",raw:true});
+    const maxScan=Math.min(matrix.length,30);
+    let bestIndex=-1;
+    let bestScore=-1;
+
+    const expectedGroups=[
+      ["DATA DE REVISÃO","DATA DA REVISÃO","DATA REVISÃO","DATA"],
+      ["PRODUTO","SKU"],
+      ["LOTE"],
+      ["MÁQUINA","EQUIPAMENTO"],
+      ["BICO COM VAZAMENTO","BICO"],
+      ["DEFEITO N1","N1"]
+    ];
+
+    for(let r=0;r<maxScan;r++){
+      const cells=(matrix[r]||[]).map(normalizeHeaderKey).filter(Boolean);
+      if(!cells.length) continue;
+
+      let score=0;
+      expectedGroups.forEach(group=>{
+        if(group.some(alias=>cells.includes(normalizeHeaderKey(alias)))) score++;
+      });
+
+      // Bônus para linhas que parecem claramente cabeçalho.
+      if(cells.includes("DATA") && cells.includes("LOTE")) score+=1;
+      if(cells.includes("SKU") && cells.includes("MÁQUINA")) score+=1;
+      if(score>bestScore){
+        bestScore=score;
+        bestIndex=r;
+      }
+    }
+
+    // Se não houver nenhum indício, mantém a primeira linha como cabeçalho.
+    return bestIndex>=0 ? bestIndex : 0;
+  }
+
+  function readSelectedSheetRows(sheet){
+    const headerRow=detectHeaderRow(sheet);
+    const rows=XLSX.utils.sheet_to_json(sheet,{
+      defval:"",
+      raw:true,
+      range:headerRow
+    });
+    return {rows,headerRow};
+  }
+
+  let loadedWorkbook = null;
+  let loadedWorkbookName = "";
+
+  function prepareWorkbook(workbook, fileName){
+    loadedWorkbook = workbook;
+    loadedWorkbookName = fileName || "";
+    const select = $("sheetSelect");
+    select.innerHTML = `<option value="">Escolha a aba da planilha</option>` +
+      workbook.SheetNames.map(name => `<option value="${escapeAttr(name)}">${escapeHtml(name)}</option>`).join("");
+    $("sheetPickerWrap").classList.remove("hidden");
+    $("fileStatus").innerHTML = `Arquivo: <strong>${escapeHtml(loadedWorkbookName)}</strong> · ${workbook.SheetNames.length} abas disponíveis · <strong>Escolha qual aba importar</strong>`;
+    toast("Planilha carregada. Agora escolha a aba que deseja importar.");
+  }
+
+  function loadSelectedSheet(){
+    if(!loadedWorkbook){
+      toast("Primeiro selecione uma planilha Excel.");
+      return;
+    }
+    const sheetName = $("sheetSelect").value;
+    if(!sheetName){
+      toast("Escolha uma aba da planilha.");
+      $("sheetSelect").focus();
+      return;
+    }
+
+    const sheet = loadedWorkbook.Sheets[sheetName];
+    const parsed=readSelectedSheetRows(sheet);
+    const rows=parsed.rows;
+    rawRows = rows.map(normalizeRow).filter(r => r.revisionDate || r.product || r.lot || r.machine || r.bico || r.n1);
+    currentFileName = loadedWorkbookName;
+    embeddedData = rawRows;
+
+    populateFilters();
+    setDateBounds();
+    clearHierarchy(false);
+    applyFilters();
+
+    const headerLine=parsed.headerRow+1;
+    $("fileStatus").innerHTML = `Arquivo: <strong>${escapeHtml(currentFileName)}</strong> · Aba: <strong>${escapeHtml(sheetName)}</strong> · Cabeçalho identificado na linha <strong>${headerLine}</strong> · <strong>${rawRows.length.toLocaleString("pt-BR")} registros</strong>`;
+    $("sheetPickerWrap").classList.add("hidden");
+
+    if(!rawRows.length){
+      toast(`Aba "${sheetName}" lida, mas nenhum registro compatível foi encontrado. Verifique os cabeçalhos da BASE.`);
+    }else{
+      toast(`Aba "${sheetName}" importada: ${rawRows.length.toLocaleString("pt-BR")} registros.`);
+    }
+  }
+
+  function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));}
+
+  function uniqueSorted(rows, prop, numericSort=false){
+    const vals = [...new Set(rows.map(r=>r[prop]).filter(v=>v!=="" && v!=null))];
+    return vals.sort((a,b)=>numericSort ? Number(a)-Number(b) : String(a).localeCompare(String(b),"pt-BR"));
+  }
+
+  function setOptions(id, values, firstLabel, selected=""){
+    const el=$(id);
+    el.innerHTML = `<option value="">${firstLabel}</option>` + values.map(v=>`<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`).join("");
+    if(values.includes(selected)) el.value=selected;
+  }
+  function escapeAttr(s){return String(s).replace(/"/g,"&quot;");}
+
+  function populateFilters(){
+    setOptions("productFilter",uniqueSorted(rawRows,"product"),"Todos");
+    setOptions("machineFilter",uniqueSorted(rawRows,"machine"),"Todas");
+    setOptions("lotFilter",uniqueSorted(rawRows,"lot"),"Todos");
+    setOptions("n1Filter",uniqueSorted(rawRows,"n1"),"Todos");
+    setOptions("n2Filter",uniqueSorted(rawRows,"n2"),"Todos");
+    setOptions("n3Filter",uniqueSorted(rawRows,"n3"),"Todos");
+    setOptions("shiftFilter",["1","2","3"],"Todos");
+  }
+
+  function setDateBounds(){
+    const dates=rawRows.map(r=>r.revisionDate).filter(Boolean).sort((a,b)=>a-b);
+    if(!dates.length) return;
+    $("dateStart").value=dateISO(dates[0]);
+    $("dateEnd").value=dateISO(dates[dates.length-1]);
+  
+    const weekDates=rawRows.map(r=>rowDateKey(r)).filter(Boolean).sort();
+    if(weekDates.length){
+      if(!weekStartDate) weekStartDate=weekDates[0];
+      if(!weekEndDate) weekEndDate=weekDates[weekDates.length-1];
+      if(!weekAppliedStartDate) weekAppliedStartDate=weekStartDate;
+      if(!weekAppliedEndDate) weekAppliedEndDate=weekEndDate;
+      $("weekStartDate").value=weekStartDate;
+      $("weekEndDate").value=weekEndDate;
+      updateWeekPrintNote();
+    }
+}
+
+  function getDataDateBounds(){
+    const dates=rawRows.map(r=>r.revisionDate).filter(Boolean).sort((a,b)=>a-b);
+    return {min:dates[0]||null,max:dates[dates.length-1]||null};
+  }
+
+  function getFilterState(){
+    const startValue=$("dateStart").value;
+    const endValue=$("dateEnd").value;
+    const bounds=getDataDateBounds();
+    const minISO=bounds.min?dateISO(bounds.min):"";
+    const maxISO=bounds.max?dateISO(bounds.max):"";
+    // As datas exibidas automaticamente pela base representam "sem filtro".
+    // Só tratamos o período como filtro global quando o usuário realmente
+    // restringe o intervalo em relação ao período completo da base.
+    const start=startValue && startValue!==minISO ? new Date(startValue+"T00:00:00") : null;
+    const end=endValue && endValue!==maxISO ? new Date(endValue+"T00:00:00") : null;
+    return {
+      start,
+      end,
+      product: $("productFilter").value,
+      machine: $("machineFilter").value,
+      shift: $("shiftFilter").value,
+      lot: $("lotFilter").value,
+      n1: $("n1Filter").value,
+      n2: $("n2Filter").value,
+      n3: $("n3Filter").value
+    };
+  }
+
+  function globalMachine(){ return $("machineFilter")?.value || ""; }
+  function globalProduct(){ return $("productFilter")?.value || ""; }
+  function globalPeriodIsActive(){ const f=getFilterState(); return !!(f.start||f.end); }
+  function effectiveBicoMachine(){ return globalMachine() || bicoMachineSelected; }
+  function effectiveBicoProduct(){ return globalProduct() || bicoProductSelected; }
+  function effectiveParetoEquipment(){ return globalMachine() || paretoEquipmentSelected; }
+
+  function matchesHierarchy(r){
+    if(hierarchy.length===0) return true;
+    if(hierarchy.length>=1 && r.n1!==hierarchy[0]) return false;
+    if(hierarchy.length>=2 && r.n2!==hierarchy[1]) return false;
+    if(hierarchy.length>=3 && r.n3!==hierarchy[2]) return false;
+    return true;
+  }
+
+  function applyFilters(){
+    if(!rawRows.length){ filteredRows=[]; renderAll(); return; }
+    const f=getFilterState();
+    filteredRows=rawRows.filter(r=>{
+      if(f.start && (!r.revisionDate || r.revisionDate < f.start)) return false;
+      if(f.end && (!r.revisionDate || r.revisionDate > f.end)) return false;
+      if(f.product && r.product!==f.product) return false;
+      if(f.machine && r.machine!==f.machine) return false;
+      if(f.shift && r.shift!==f.shift) return false;
+      if(f.lot && r.lot!==f.lot) return false;
+      if(f.n1 && r.n1!==f.n1) return false;
+      if(f.n2 && r.n2!==f.n2) return false;
+      if(f.n3 && r.n3!==f.n3) return false;
+      if(!matchesHierarchy(r)) return false;
+      return true;
+    });
+    renderAll();
+  }
+
+  function clearHierarchy(update=true){
+    hierarchy=[];
+    if(update) applyFilters();
+    renderBreadcrumb();
+  }
+
+  function resetFilters(){
+    populateFilters();
+    setDateBounds();
+    $("productFilter").value="";
+    $("machineFilter").value="";
+    $("shiftFilter").value="";
+    $("lotFilter").value="";
+    $("n1Filter").value="";
+    $("n2Filter").value="";
+    $("n3Filter").value="";
+    hierarchy=[];
+    applyFilters();
+    toast("Filtros limpos.");
+  }
+
+  function sum(rows,prop){
+    return rows.reduce((a,r)=>a+numeric(r[prop]),0);
+  }
+  function countBy(rows,prop){
+    const m=new Map();
+    rows.forEach(r=>{const k=r[prop] || "Não informado";m.set(k,(m.get(k)||0)+numeric(r.registroVisivel));});
+    return [...m.entries()];
+  }
+  function bicoByMonth(rows){
+    const m=new Map(MONTHS.map(x=>[x,0]));
+    rows.forEach(r=>{if(m.has(r.month))m.set(r.month,m.get(r.month)+numeric(r.bicoVisivel));});
+    return MONTHS.filter(x=>m.get(x)>0).map(x=>[x,m.get(x)]);
+  }
+  function ncByMonth(rows){
+    const m=new Map(MONTHS.map(x=>[x,0]));
+    rows.forEach(r=>{if(m.has(r.month))m.set(r.month,m.get(r.month)+numeric(r.registroVisivel));});
+    return MONTHS.filter(x=>m.get(x)>0).map(x=>[x,m.get(x)]);
+  }
+  function ncByWeek(rows){
+    const m=new Map();
+    rows.forEach(r=>{if(r.week)m.set(r.week,(m.get(r.week)||0)+numeric(r.registroVisivel));});
+    return [...m.entries()].sort((a,b)=>weekNum(a[0])-weekNum(b[0]));
+  }
+  function weekNum(s){const n=String(s).match(/\d+/);return n?Number(n[0]):9999;}
+
+  function destroyChart(name){
+    if(charts[name]){charts[name].destroy();charts[name]=null;}
+  }
+  function makeChart(name,id,type,labels,data,opts={}){
+    destroyChart(name);
+    const ctx=$(id).getContext("2d");
+    charts[name]=new Chart(ctx,{
+      type,
+      data:{labels,datasets:[{
+        label:opts.label||"Quantidade",
+        data,
+        backgroundColor:opts.backgroundColor||"rgba(13,92,168,.72)",
+        borderColor:opts.borderColor||"#0d5ca8",
+        borderWidth:opts.borderWidth??1.5,
+        borderRadius:opts.borderRadius??6,
+        fill:opts.fill??false,
+        tension:.28,
+        pointRadius:type==="line"?3:0,
+        pointHoverRadius:6
+      }]},
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        indexAxis:opts.indexAxis || "x",
+        animation:{duration:450},
+        layout:{padding:{top:28,right:18,left:4,bottom:4}},
+        plugins:{
+          datalabels:{display: opts.showLabels !== false, color:"#17334d", anchor: type==="line" ? "end" : "end", align: type==="line" ? "top" : (opts.indexAxis==="y" ? "right" : "top"), offset:6, clip:false, clamp:true, font:{size:10,weight:"800"}, formatter:(v)=>Number(v).toLocaleString("pt-BR")},
+          legend:{display:!!opts.legend,position:"bottom",labels:{boxWidth:10,font:{size:10}}},
+          tooltip:{callbacks:{label:(c)=>`${opts.tooltipLabel||"Quantidade"}: ${Number(c.parsed.y ?? c.parsed).toLocaleString("pt-BR")}${opts.suffix||""}`}}
+        },
+        scales:type==="doughnut"?{}:{
+          x:{grid:{display:false},ticks:{font:{size:9},maxRotation:45,minRotation:0}},
+          y:{beginAtZero:true,grid:{color:"rgba(80,100,120,.10)"},ticks:{font:{size:9},precision:0}}
+        },
+        onClick:opts.onClick||undefined
+      }
+    });
+  }
+
+  function setEmpty(id,show,msg){
+    const e=$(id); e.textContent=msg||e.textContent; e.classList.toggle("hidden",!show);
+  }
+
+  function renderCards(){
+    const total=sum(filteredRows,"registroVisivel");
+    $("cardTotal").textContent=total.toLocaleString("pt-BR");
+    $("cardBicos").textContent=sum(filteredRows,"bicoVisivel").toLocaleString("pt-BR");
+    $("cardProducts").textContent=new Set(filteredRows.map(r=>r.product).filter(Boolean)).size.toLocaleString("pt-BR");
+    $("cardLots").textContent=new Set(filteredRows.map(r=>r.lot).filter(Boolean)).size.toLocaleString("pt-BR");
+    $("cardMachines").textContent=new Set(filteredRows.map(r=>r.machine).filter(Boolean)).size.toLocaleString("pt-BR");
+    const shifts=countBy(filteredRows,"shift").sort((a,b)=>b[1]-a[1]);
+    if(shifts.length){
+      const [s,v]=shifts[0], pct=total? v/total*100:0;
+      $("cardShift").textContent=`Turno ${s}`;
+      $("cardShiftSub").textContent=`Participação: ${pct.toFixed(1).replace(".",",")}%`;
+    }else{$("cardShift").textContent="—";$("cardShiftSub").textContent="Participação: 0%";}
+  }
+
+  function renderDefectChart(){
+    const ctx=$("defectChart").getContext("2d");
+    destroyChart("defect");
+    let entries;
+    let title="Quantidade por tipo de NC";
+    let level=hierarchy.length;
+    if(level===0) entries=countBy(filteredRows,"n1");
+    else if(level===1) entries=countBy(filteredRows.filter(r=>r.n1===hierarchy[0]),"n2");
+    else entries=countBy(filteredRows.filter(r=>r.n1===hierarchy[0]&&r.n2===hierarchy[1]),"n3");
+    entries=entries.filter(x=>x[0] && x[0]!=="NA").sort((a,b)=>b[1]-a[1]);
+    $("defectTitle").textContent=level===0?"Quantidade por tipo de NC":`Defeitos N${level+1} · ${hierarchy[level-1]}`;
+    setEmpty("defectEmpty",entries.length===0,"Nenhum defeito encontrado.");
+    if(!entries.length){ctx.clearRect(0,0,$("defectChart").width,$("defectChart").height);return;}
+    charts.defect=new Chart(ctx,{
+      type:"bar",
+      data:{labels:entries.map(x=>x[0]),datasets:[{label:"NC",data:entries.map(x=>x[1]),backgroundColor:level===0?"rgba(181,31,42,.72)":level===1?"rgba(232,125,34,.72)":"rgba(13,92,168,.72)",borderColor:level===0?"#b51f2a":level===1?"#e87d22":"#0d5ca8",borderWidth:1,borderRadius:6}]},
+      options:{
+        indexAxis:entries.length>6?"y":"x",responsive:true,maintainAspectRatio:false,layout:{padding:{top:28,right:46,left:4,bottom:4}},
+        plugins:{datalabels:{display:true,color:"#17334d",anchor:"end",align:entries.length>6?"right":"top",offset:entries.length>6?7:6,clip:false,clamp:true,font:{size:10,weight:"800"},formatter:v=>Number(v).toLocaleString("pt-BR")},legend:{display:false},tooltip:{callbacks:{label:c=>`NC: ${Number(c.raw).toLocaleString("pt-BR")}`}}},
+        scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{beginAtZero:true,grid:{color:"rgba(80,100,120,.10)"},ticks:{font:{size:9},precision:0}}},
+        onClick:(evt,elements)=>{
+          if(!elements.length) return;
+          const idx=elements[0].index, selected=entries[idx][0];
+          const detailRows = level===0
+            ? filteredRows.filter(r=>r.n1===selected)
+            : level===1
+              ? filteredRows.filter(r=>r.n1===hierarchy[0] && r.n2===selected)
+              : filteredRows.filter(r=>r.n1===hierarchy[0] && r.n2===hierarchy[1] && r.n3===selected);
+          openDetail(`Defeito N${level+1}`,selected,detailRows);
+          if(level===0){hierarchy=[selected];}
+          else if(level===1){hierarchy=[hierarchy[0],selected];}
+          else {hierarchy=[hierarchy[0],hierarchy[1],selected];}
+          syncHierarchyFilters();
+          applyFilters();
+        }
+      }
+    });
+  }
+
+  function syncHierarchyFilters(){
+    $("n1Filter").value=hierarchy[0]||"";
+    populateDependentDefects();
+    if(hierarchy[1]) $("n2Filter").value=hierarchy[1];
+    populateDependentN3();
+    if(hierarchy[2]) $("n3Filter").value=hierarchy[2];
+  }
+
+  function populateDependentDefects(){
+    const n1=$("n1Filter").value;
+    const rows=n1?rawRows.filter(r=>r.n1===n1):rawRows;
+    setOptions("n2Filter",uniqueSorted(rows,"n2"),"Todos",$("n2Filter").value);
+    if(!n1){setOptions("n3Filter",uniqueSorted(rawRows,"n3"),"Todos",$("n3Filter").value);}
+    else populateDependentN3();
+  }
+  function populateDependentN3(){
+    const n1=$("n1Filter").value,n2=$("n2Filter").value;
+    let rows=rawRows;
+    if(n1) rows=rows.filter(r=>r.n1===n1);
+    if(n2) rows=rows.filter(r=>r.n2===n2);
+    setOptions("n3Filter",uniqueSorted(rows,"n3"),"Todos",$("n3Filter").value);
+  }
+
+  function renderBreadcrumb(){
+    const el=$("breadcrumb");
+    let html=`<span class="crumb ${hierarchy.length===0?"active":""}" data-level="0">Todos os defeitos</span>`;
+    hierarchy.forEach((x,i)=>{
+      html+=`<span class="sep">›</span><span class="crumb ${i===hierarchy.length-1?"active":""}" data-level="${i+1}">${escapeHtml(x)}</span>`;
+    });
+    el.innerHTML=html;
+    el.querySelectorAll(".crumb").forEach(c=>{
+      c.addEventListener("click",()=>{
+        const level=Number(c.dataset.level);
+        if(level===0) hierarchy=[];
+        else hierarchy=hierarchy.slice(0,level);
+        syncHierarchyFilters();
+        applyFilters();
+      });
+    });
+  }
+
+  function renderShiftPct(){
+    const entries=countBy(filteredRows,"shift").sort((a,b)=>Number(a[0])-Number(b[0]));
+    const total=entries.reduce((a,x)=>a+x[1],0);
+    const labels=entries.map(x=>`Turno ${x[0]}`);
+    const vals=entries.map(x=>total?x[1]/total*100:0);
+    setEmpty("shiftPctEmpty",entries.length===0);
+    destroyChart("shiftPct");
+    if(!entries.length)return;
+    charts.shiftPct=new Chart($("shiftPctChart").getContext("2d"),{
+      type:"doughnut",
+      data:{labels,datasets:[{data:vals,backgroundColor:["#0d5ca8","#e87d22","#2f8a57"],borderColor:"#fff",borderWidth:3}]},
+      options:{responsive:true,maintainAspectRatio:true,aspectRatio:1,cutout:"60%",onClick:(evt,els)=>{if(els.length){const i=els[0].index; const shift=entries[i][0]; openDetail("Turno",`Turno ${shift}`,filteredRows.filter(r=>r.shift===shift));}},plugins:{datalabels:{display:true,color:"#fff",font:{size:12,weight:"900"},formatter:(v)=>v.toFixed(1).replace(".",",")+"%"},legend:{display:true,position:"bottom",labels:{font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:c=>`${c.label}: ${c.raw.toFixed(1).replace(".",",")}%`}}}}
+    });
+  }
+
+  function renderProduct(){
+    const entries=countBy(filteredRows,"product").sort((a,b)=>b[1]-a[1]);
+    const labels=entries.map(x=>x[0]);const vals=entries.map(x=>x[1]);
+    setEmpty("productEmpty",entries.length===0);destroyChart("product");
+    if(!entries.length)return;
+    charts.product=new Chart($("productChart").getContext("2d"),{
+      type:"bar",data:{labels,datasets:[{label:"NC",data:vals,backgroundColor:"rgba(181,31,42,.70)",borderColor:"#b51f2a",borderWidth:1,borderRadius:6}]},
+      options:{indexAxis:labels.length>5?"y":"x",responsive:true,maintainAspectRatio:false,layout:{padding:{top:10,right:58,left:4,bottom:4}},onClick:(evt,els)=>{if(els.length){const i=els[0].index;openDetail("Produto",labels[i],filteredRows.filter(r=>r.product===labels[i]));}},plugins:{datalabels:{display:true,color:"#17334d",anchor:"end",align:labels.length>5?"right":"top",offset:labels.length>5?7:6,clip:false,clamp:true,font:{size:10,weight:"800"},formatter:v=>Number(v).toLocaleString("pt-BR")},legend:{display:false},tooltip:{callbacks:{label:c=>`NC: ${Number(c.raw).toLocaleString("pt-BR")}`}}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{beginAtZero:true,grid:{color:"rgba(80,100,120,.10)"},ticks:{font:{size:9},precision:0}}}}
+    });
+  }
+
+  function renderMachine(){
+    const entries=countBy(filteredRows,"machine").sort((a,b)=>b[1]-a[1]);
+    const labels=entries.map(x=>x[0]);const vals=entries.map(x=>x[1]);
+    setEmpty("machineEmpty",entries.length===0);destroyChart("machine");
+    if(!entries.length)return;
+    charts.machine=new Chart($("machineChart").getContext("2d"),{
+      type:"bar",data:{labels,datasets:[{label:"Registros",data:vals,backgroundColor:"rgba(13,92,168,.72)",borderColor:"#0d5ca8",borderWidth:1,borderRadius:6}]},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:28,right:18,left:4,bottom:4}},plugins:{datalabels:{display:true,color:"#17334d",anchor:"end",align:"top",offset:6,clip:false,clamp:true,font:{size:10,weight:"800"},formatter:v=>Number(v).toLocaleString("pt-BR")},legend:{display:false},tooltip:{callbacks:{label:c=>`Registros: ${Number(c.raw).toLocaleString("pt-BR")}`}}},scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{beginAtZero:true,grid:{color:"rgba(80,100,120,.10)"},ticks:{font:{size:9},precision:0}}}}
+    });
+  }
+
+  function renderMonth(){
+    const entries=ncByMonth(filteredRows),labels=entries.map(x=>MONTH_LABELS[x[0]]),vals=entries.map(x=>x[1]);
+    setEmpty("monthEmpty",entries.length===0);destroyChart("month");
+    if(!entries.length)return;
+    makeChart("month","monthChart","line",labels,vals,{label:"NC",borderColor:"#d7353f",backgroundColor:"rgba(215,53,63,.10)",fill:true,tooltipLabel:"NC",showLabels:true,onClick:(evt,els)=>{if(els.length) openDetail("Mês",entries[els[0].index][0],filteredRows.filter(r=>r.month===entries[els[0].index][0]));}});
+  }
+
+  function renderWeek(){
+    const weekRows=rowsForWeekChart();
+    const entries=ncByWeek(weekRows),labels=entries.map(x=>x[0]),vals=entries.map(x=>x[1]);
+    setEmpty("weekEmpty",entries.length===0);
+    destroyChart("week");
+    if(!entries.length)return;
+    const isLine=weekChartMode==="line";
+    charts.week=new Chart($("weekChart").getContext("2d"),{
+      type:isLine?"line":"bar",
+      data:{labels,datasets:[{label:"NC",data:vals,
+        backgroundColor:isLine?"rgba(13,92,168,.12)":"rgba(232,125,34,.70)",
+        borderColor:isLine?"#0d5ca8":"#e87d22",borderWidth:isLine?2:1,
+        borderRadius:isLine?0:6,fill:isLine,tension:isLine?.28:0,
+        pointRadius:isLine?4:0,pointHoverRadius:isLine?6:5}]},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:30,right:20,left:4,bottom:4}},
+        plugins:{
+          datalabels:{display:true,color:"#17334d",anchor:"end",align:"top",offset:6,clip:false,clamp:true,font:{size:10,weight:"900"},formatter:v=>Number(v).toLocaleString("pt-BR")},
+          legend:{display:false},tooltip:{callbacks:{label:c=>`NC: ${Number(c.raw).toLocaleString("pt-BR")}`}}
+        },
+        scales:{x:{grid:{display:false},ticks:{font:{size:9}}},
+          y:{beginAtZero:true,grid:{color:"rgba(80,100,120,.10)"},ticks:{font:{size:9},precision:0}}},
+        onClick:(evt,els)=>{if(els.length){const item=entries[els[0].index];openDetail("Semana",item[0],weekRows.filter(r=>r.week===item[0]));}}
+      }
+    });
+    $("weekToggleIcon").textContent=isLine?"▮":"⌁";
+    $("weekToggleText").textContent=isLine?"Barras":"Linha";
+    $("weekToggle").title=isLine?"Mudar para barras":"Mudar para linha";
+  }
+
+  function renderBicoMonth(){
+    const entries=bicoByMonth(filteredRows),labels=entries.map(x=>MONTH_LABELS[x[0]]),vals=entries.map(x=>x[1]);
+    setEmpty("bicoMonthEmpty",entries.length===0);destroyChart("bicoMonth");
+    if(!entries.length)return;
+    makeChart("bicoMonth","bicoMonthChart","bar",labels,vals,{label:"Bicos",backgroundColor:"rgba(181,31,42,.68)",borderColor:"#b51f2a",tooltipLabel:"Bicos com vazamento",showLabels:true,onClick:(evt,els)=>{if(els.length) openDetail("Mês / Bicos com vazamento",entries[els[0].index][0],filteredRows.filter(r=>r.month===entries[els[0].index][0]&&numeric(r.bicoVisivel)>0));}});
+  }
+
+
+
+
+
+  function rowDateKey(row){
+    const d=row.revisionDate instanceof Date ? row.revisionDate : parseDate(row.revisionDate);
+    if(!d || Number.isNaN(d.getTime())) return "";
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  }
+  function rowsForWeekChart(){
+    // Regra de precedência: período global, quando realmente aplicado,
+    // vale para todo o dashboard e o filtro local de semana não restringe
+    // novamente o conjunto. Sem período global, o gráfico usa seu próprio
+    // filtro de datas.
+    if(globalPeriodIsActive()) return filteredRows.slice();
+    let rows=filteredRows.slice();
+    if(weekAppliedStartDate) rows=rows.filter(r=>{const k=rowDateKey(r);return !k||k>=weekAppliedStartDate;});
+    if(weekAppliedEndDate) rows=rows.filter(r=>{const k=rowDateKey(r);return !k||k<=weekAppliedEndDate;});
+    return rows;
+  }
+  function isNIValue(v){
+    const s=String(v??"").trim().toUpperCase();
+    return !s||s==="NI"||s==="N/I"||s==="NÃO IDENTIFICADO"||s==="NAO IDENTIFICADO";
+  }
+
+  function populateBicoProductSelect(){
+    const select=$("bicoProductSelect");
+    const current=bicoProductSelected;
+    const products=[...new Set(rawRows.map(r=>r.product).filter(Boolean))]
+      .sort((a,b)=>a.localeCompare(b,"pt-BR",{numeric:true}));
+    select.innerHTML='<option value="">Todos os produtos</option>'+
+      products.map(p=>`<option value="${escapeAttr(p)}">${escapeHtml(p)}</option>`).join("");
+    const g=globalProduct();
+    if(g && products.includes(g)){
+      select.value=g;
+      select.disabled=true;
+    }else{
+      select.disabled=false;
+      if(products.includes(current)){
+        select.value=current;
+      }else{
+        bicoProductSelected="";
+        select.value="";
+      }
+    }
+  }
+
+  function populateBicoMachineSelect(){
+    const select=$("bicoMachineSelect");
+    const current=bicoMachineSelected;
+    const machines=[...new Set(rawRows.map(r=>r.machine).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"pt-BR",{numeric:true}));
+    select.innerHTML='<option value="">Selecione uma máquina</option>'+machines.map(m=>`<option value="${escapeAttr(m)}">${escapeHtml(m)}</option>`).join("");
+    const g=globalMachine();
+    if(g && machines.includes(g)){
+      select.value=g;
+      select.disabled=true;
+    }else{
+      select.disabled=false;
+      if(machines.includes(current)){select.value=current;}else{bicoMachineSelected="";select.value="";}
+    }
+  }
+
+
+
+  function renderBicoMachine(){
+    const selectedMachine=effectiveBicoMachine();
+    const selectedProduct=effectiveBicoProduct();
+
+    setEmpty("bicoMachineEmpty",!selectedMachine);
+    destroyChart("bicoMachine");
+
+    if(!selectedMachine){
+      $("bicoMachineNote").textContent=selectedProduct
+        ? `Produto selecionado: ${selectedProduct}. Escolha uma máquina para ver os bicos com vazamento.`
+        : "Escolha uma máquina e, se desejar, um produto para visualizar todos os bicos com vazamento.";
+      $("bicoAnalysisTitle").textContent="Selecione uma máquina e, se desejar, um produto.";
+      $("leakTotal").textContent="0";
+      $("leakBicos").textContent="0";
+      $("leakTopBico").textContent="—";
+      $("leakTopShare").textContent="0%";
+      $("bicoMachineWrap").style.height="300px";
+      return;
+    }
+
+    const source=filteredRows.filter(r=>
+      r.machine===selectedMachine &&
+      (!selectedProduct || r.product===selectedProduct) &&
+      (!excludeNIBico || !isNIValue(r.bico)) &&
+      numeric(r.bicoVisivel)>0
+    );
+
+    const map=new Map();
+    source.forEach(r=>{
+      const bico=r.bico || r.bicoPadronizado || "Bico não informado";
+      if(!map.has(bico)) map.set(bico,0);
+      map.set(bico,map.get(bico)+numeric(r.bicoVisivel));
+    });
+
+    const entries=[...map.entries()].sort((a,b)=>b[1]-a[1]);
+
+    setEmpty("bicoMachineEmpty",entries.length===0);
+    if(!entries.length){
+      $("bicoMachineNote").textContent=selectedProduct
+        ? `Nenhum vazamento encontrado na máquina ${selectedMachine} para o produto ${selectedProduct}.`
+        : `Nenhum vazamento encontrado na máquina ${selectedMachine}.`;
+      $("bicoAnalysisTitle").textContent=selectedProduct
+        ? `Máquina ${selectedMachine} · Produto ${selectedProduct}`
+        : `Máquina ${selectedMachine} · Todos os produtos`;
+      $("leakTotal").textContent="0";
+      $("leakBicos").textContent="0";
+      $("leakTopBico").textContent="—";
+      $("leakTopShare").textContent="0%";
+      $("bicoMachineWrap").style.height="300px";
+      return;
+    }
+
+    // Show every bico found for the selected machine/product; chart grows as needed.
+    const rowHeight=31;
+    const chartHeight=Math.max(300,entries.length*rowHeight+80);
+    $("bicoMachineWrap").style.height=`${Math.min(900,chartHeight)}px`;
+
+    const labels=entries.map(x=>x[0]);
+    const values=entries.map(x=>x[1]);
+
+    const totalLeak=values.reduce((a,v)=>a+numeric(v),0);
+    const topValue=values[0] || 0;
+    const topShare=totalLeak ? (topValue/totalLeak)*100 : 0;
+    $("leakTotal").textContent=totalLeak.toLocaleString("pt-BR");
+    $("leakBicos").textContent=entries.length.toLocaleString("pt-BR");
+    $("leakTopBico").textContent=labels[0] || "—";
+    $("leakTopShare").textContent=topShare.toLocaleString("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1})+"%";
+
+    const analysisTitle=selectedProduct
+      ? `Máquina ${selectedMachine} · Produto ${selectedProduct}`
+      : `Máquina ${selectedMachine} · Todos os produtos`;
+    $("bicoAnalysisTitle").textContent=excludeNIBico ? analysisTitle+" · NI excluído" : analysisTitle;
+    $("bicoMachineNote").textContent=selectedProduct
+      ? `Máquina ${selectedMachine} · Produto ${selectedProduct} · ${entries.length} bico(s) com vazamento.`
+      : `Máquina ${selectedMachine} · Todos os produtos · ${entries.length} bico(s) com vazamento.`;
+
+    charts.bicoMachine=new Chart($("bicoMachineChart").getContext("2d"),{
+      type:"bar",
+      data:{labels,datasets:[{
+        label:"Bicos com vazamento",
+        data:values,
+        backgroundColor:"rgba(181,31,42,.70)",
+        borderColor:"#b51f2a",
+        borderWidth:1,
+        borderRadius:6
+      }]},
+      options:{
+        indexAxis:"y",
+        responsive:true,
+        maintainAspectRatio:false,
+        layout:{padding:{top:10,right:58,left:4,bottom:8}},
+        plugins:{
+          datalabels:{
+            display:true,
+            color:"#17334d",
+            anchor:"end",
+            align:"right",
+            offset:7,
+            clip:false,
+            clamp:true,
+            font:{size:10,weight:"900"},
+            formatter:v=>Number(v).toLocaleString("pt-BR")
+          },
+          legend:{display:false},
+          tooltip:{callbacks:{label:c=>`Bicos com vazamento: ${Number(c.raw).toLocaleString("pt-BR")}`}}
+        },
+        scales:{
+          x:{beginAtZero:true,grid:{color:"rgba(80,100,120,.10)"},ticks:{font:{size:9},precision:0}},
+          y:{grid:{display:false},ticks:{font:{size:9}}}
+        },
+        onClick:(evt,els)=>{
+          if(!els.length)return;
+          const bico=labels[els[0].index];
+          const rows=source.filter(r=>(r.bico||r.bicoPadronizado||"Bico não informado")===bico);
+          openDetail(
+            "Máquina / Bico",
+            `${selectedMachine} · ${bico}${selectedProduct ? ` · ${selectedProduct}` : ""}`,
+            rows
+          );
+        }
+      }
+    });
+  }
+
+
+
+  function renderBicoLeakMonth(){
+    const selectedMachine=effectiveBicoMachine();
+    const selectedProduct=effectiveBicoProduct();
+    destroyChart("bicoLeakMonth");
+
+    if(!selectedMachine){
+      setEmpty("bicoLeakMonthEmpty",true);
+      return;
+    }
+
+    const source=filteredRows.filter(r=>
+      r.machine===selectedMachine &&
+      (!selectedProduct || r.product===selectedProduct) &&
+      (!excludeNIBico || !isNIValue(r.bico)) &&
+      numeric(r.bicoVisivel)>0
+    );
+
+    const map=new Map();
+    source.forEach(r=>{
+      const month=r.month || "Sem mês";
+      map.set(month,(map.get(month)||0)+numeric(r.bicoVisivel));
+    });
+
+    const entries=[...map.entries()];
+    setEmpty("bicoLeakMonthEmpty",entries.length===0);
+    if(!entries.length)return;
+
+    const labels=entries.map(x=>x[0]);
+    const values=entries.map(x=>x[1]);
+
+    charts.bicoLeakMonth=new Chart($("bicoLeakMonthChart").getContext("2d"),{
+      type:"line",
+      data:{labels,datasets:[{
+        label:"Vazamentos",
+        data:values,
+        borderColor:"#b51f2a",
+        backgroundColor:"rgba(181,31,42,.10)",
+        borderWidth:2.5,
+        fill:true,
+        tension:.28,
+        pointRadius:4,
+        pointHoverRadius:6
+      }]},
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        layout:{padding:{top:28,right:22,left:4,bottom:4}},
+        plugins:{
+          datalabels:{display:true,color:"#17334d",anchor:"end",align:"top",offset:5,clip:false,clamp:true,font:{size:10,weight:"900"},formatter:v=>Number(v).toLocaleString("pt-BR")},
+          legend:{display:false},
+          tooltip:{callbacks:{label:c=>`Vazamentos: ${Number(c.raw).toLocaleString("pt-BR")}`}}
+        },
+        scales:{
+          x:{grid:{display:false},ticks:{font:{size:9}}},
+          y:{beginAtZero:true,grid:{color:"rgba(80,100,120,.10)"},ticks:{font:{size:9},precision:0}}
+        },
+        onClick:(evt,els)=>{
+          if(!els.length)return;
+          const month=labels[els[0].index];
+          openDetail(
+            "Mês / Vazamentos",
+            `${selectedMachine} · ${month}${selectedProduct ? ` · ${selectedProduct}` : ""}`,
+            source.filter(r=>r.month===month)
+          );
+        }
+      }
+    });
+  }
+
+  function populateParetoEquipmentSelect(){
+    const select=$("paretoEquipmentSelect");
+    const current=paretoEquipmentSelected;
+    const equipments=[...new Set(rawRows.map(r=>r.machine).filter(Boolean))]
+      .sort((a,b)=>a.localeCompare(b,"pt-BR",{numeric:true}));
+
+    select.innerHTML='<option value="">Selecione um equipamento</option>'+
+      equipments.map(v=>`<option value="${escapeAttr(v)}">${escapeHtml(v)}</option>`).join("");
+
+    const g=globalMachine();
+    if(g && equipments.includes(g)){
+      select.value=g;
+      select.disabled=true;
+    }else{
+      select.disabled=false;
+      if(equipments.includes(current)){
+        select.value=current;
+      }else{
+        paretoEquipmentSelected="";
+        select.value="";
+      }
+    }
+
+    const effective=effectiveParetoEquipment();
+    $("paretoExcludeNI").disabled=!effective;
+    if(!effective) $("paretoExcludeNI").checked=false;
+  }
+
+  function renderParetoBico(){
+    destroyChart("paretoBico");
+
+    const selectedEquipment=effectiveParetoEquipment();
+    const excludeNI=!!paretoExcludeNI;
+
+    $("paretoExcludeNI").disabled=!selectedEquipment;
+
+    if(!selectedEquipment){
+      $("paretoTitle").textContent="Pareto de NC por equipamento";
+      $("paretoSubtitle").textContent="Selecione um equipamento para visualizar o Pareto dos bicos com NC.";
+      $("paretoBicoEmpty").textContent="Selecione um equipamento para visualizar o Pareto dos bicos.";
+      $("paretoBicoEmpty").classList.remove("hidden");
+      $("paretoInsight").textContent="Selecione um equipamento para visualizar a concentração das NCs.";
+      return;
+    }
+
+    const source=filteredRows.filter(r=>{
+      if(numeric(r.registroVisivel)<=0)return false;
+      if(r.machine!==selectedEquipment)return false;
+      if(excludeNI && isNIValue(r.bico))return false;
+      return true;
+    });
+
+    const map=new Map();
+
+    source.forEach(r=>{
+      const bico=r.bico || r.bicoPadronizado || "Bico não informado";
+      map.set(bico,(map.get(bico)||0)+numeric(r.registroVisivel));
+    });
+
+    const entries=[...map.entries()].sort((a,b)=>b[1]-a[1]);
+    setEmpty("paretoBicoEmpty",entries.length===0);
+
+    $("paretoTitle").textContent=selectedEquipment
+      ? `Pareto de NC por equipamento — ${selectedEquipment}`
+      : "Pareto de NC por equipamento";
+
+    $("paretoSubtitle").textContent=selectedEquipment
+      ? `Distribuição das não conformidades por bico no equipamento ${selectedEquipment}, com participação acumulada.`
+      : "Selecione um equipamento para visualizar o Pareto dos bicos com NC.";
+
+    $("paretoBicoEmpty").textContent=excludeNI
+      ? `Nenhum bico com NC encontrado em ${selectedEquipment} após excluir os NIs.`
+      : `Nenhum bico com NC encontrado em ${selectedEquipment}.`;
+
+    $("paretoInsight").textContent=excludeNI
+      ? `Nenhuma NC identificada em ${selectedEquipment} após excluir os NIs.`
+      : `Nenhuma NC identificada em ${selectedEquipment}.`;
+
+    if(!entries.length)return;
+
+    const labels=entries.map(x=>x[0]);
+    const values=entries.map(x=>x[1]);
+    const total=values.reduce((a,v)=>a+numeric(v),0);
+
+    let accumulated=0;
+    const cumulative=values.map(v=>{
+      accumulated+=numeric(v);
+      return total ? (accumulated/total)*100 : 0;
+    });
+
+    const cutoffIndex=cumulative.findIndex(v=>v>=80);
+    if(cutoffIndex>=0){
+      const cutoffCount=cutoffIndex+1;
+      const cutoffPct=cumulative[cutoffIndex];
+      $("paretoInsight").innerHTML=
+        `<strong>80% das NCs:</strong> atingidos após <strong>${cutoffCount} bico${cutoffCount===1?"":"s"}</strong> `+
+        `(${cutoffPct.toLocaleString("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1})}% acumulado em ${escapeHtml(labels[cutoffIndex])}).`;
+    }else{
+      $("paretoInsight").textContent="O acumulado não atingiu 80% no conjunto de bicos exibido.";
+    }
+
+    charts.paretoBico=new Chart($("paretoBicoChart").getContext("2d"),{
+      data:{
+        labels,
+        datasets:[
+          {
+            type:"bar",
+            label:"NC por bico",
+            data:values,
+            backgroundColor:"rgba(181,31,42,.78)",
+            borderColor:"#b51f2a",
+            borderWidth:1,
+            borderRadius:5,
+            yAxisID:"y",
+            order:2
+          },
+          {
+            type:"line",
+            label:"% acumulado",
+            data:cumulative,
+            borderColor:"#0d5ca8",
+            backgroundColor:"#0d5ca8",
+            borderWidth:3.2,
+            pointRadius:5.5,
+            pointHoverRadius:8,
+            tension:.18,
+            fill:false,
+            yAxisID:"yPercent",
+            order:1
+          },
+          {
+            type:"line",
+            label:"80%",
+            data:labels.map(()=>80),
+            borderColor:"rgba(13,92,168,.35)",
+            borderWidth:1.5,
+            borderDash:[6,5],
+            pointRadius:0,
+            pointHoverRadius:0,
+            fill:false,
+            yAxisID:"yPercent",
+            order:3
+          }
+        ]
+      },
+      options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        interaction:{mode:"index",intersect:false},
+        layout:{padding:{top:52,right:34,left:8,bottom:12}},
+        plugins:{
+          datalabels:{
+            display:(context)=>{
+              if(context.datasetIndex===0)return true;
+              if(context.datasetIndex===1)return true;
+              return false;
+            },
+            color:(context)=>context.datasetIndex===1 ? "#0d5ca8" : "#17334d",
+            anchor:(context)=>context.datasetIndex===1 ? "end" : "end",
+            align:(context)=>context.datasetIndex===1 ? "top" : "top",
+            offset:(context)=>context.datasetIndex===1 ? 7 : 6,
+            clip:false,
+            clamp:true,
+            font:{size:10,weight:"900"},
+            formatter:(v,context)=>{
+              if(context.datasetIndex===1){
+                return `${Number(v).toLocaleString("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1})}%`;
+              }
+              return Number(v).toLocaleString("pt-BR");
+            }
+          },
+          legend:{
+            display:true,
+            position:"bottom",
+            labels:{boxWidth:12,font:{size:10}}
+          },
+          tooltip:{
+            callbacks:{
+              title:(items)=>{
+                if(!items.length)return "";
+                return `Bico: ${items[0].label}`;
+              },
+              label:(context)=>{
+                if(context.datasetIndex===0){
+                  return `NC: ${Number(context.raw).toLocaleString("pt-BR")}`;
+                }
+                if(context.datasetIndex===1){
+                  return `% acumulado: ${Number(context.raw).toLocaleString("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1})}%`;
+                }
+                return "Referência: 80%";
+              }
+            }
+          }
+        },
+        scales:{
+          x:{
+            grid:{display:false},
+            ticks:{
+              font:{size:9},
+              maxRotation:45,
+              minRotation:0,
+              autoSkip:false
+            }
+          },
+          y:{
+            beginAtZero:true,
+            grid:{color:"rgba(80,100,120,.10)"},
+            ticks:{font:{size:9},precision:0},
+            title:{display:true,text:"Quantidade de NC",font:{size:10,weight:"700"}}
+          },
+          yPercent:{
+            position:"right",
+            beginAtZero:true,
+            max:110,
+            grid:{drawOnChartArea:false},
+            ticks:{
+              font:{size:9},
+              stepSize:10,
+              callback:value=>value<=100 ? `${value}%` : ""
+            },
+            title:{display:true,text:"Percentual acumulado",font:{size:10,weight:"700"}}
+          }
+        },
+        onClick:(evt,els)=>{
+          if(!els.length)return;
+          const index=els[0].index;
+          const bico=labels[index];
+
+          openDetail(
+            selectedEquipment
+              ? `Pareto de NC — ${selectedEquipment} — Bico ${bico}`
+              : `Pareto de NC — Bico ${bico}`,
+            bico,
+            source.filter(r=>(r.bico||r.bicoPadronizado||"Bico não informado")===bico)
+          );
+        }
+      }
+    });
+  }
+
+  function renderLots(){
+    const search=keyNormalize($("lotSearch").value);
+    const limit=$("lotLimit").value;
+    const m=new Map();
+    filteredRows.forEach(r=>{
+      if(!r.lot)return;
+      if(search && !keyNormalize(r.lot).includes(search))return;
+      const key=r.lot;
+      if(!m.has(key))m.set(key,{lot:key,product:r.product,machine:r.machine,shift:r.shift,count:0});
+      const o=m.get(key);o.count+=numeric(r.registroVisivel);
+      if(!o.product)o.product=r.product;if(!o.machine)o.machine=r.machine;if(!o.shift)o.shift=r.shift;
+    });
+    let arr=[...m.values()].sort((a,b)=>b.count-a.count||a.lot.localeCompare(b.lot));
+    if(limit!=="all")arr=arr.slice(0,Number(limit));
+    $("lotTableBody").innerHTML=arr.length?arr.map(o=>`<tr><td>${escapeHtml(o.lot)}</td><td>${escapeHtml(o.product)}</td><td>${escapeHtml(o.machine)}</td><td>Turno ${escapeHtml(o.shift)}</td><td class="right"><strong>${o.count.toLocaleString("pt-BR")}</strong></td></tr>`).join(""):`<tr><td colspan="5" style="text-align:center;color:#7b8792">Nenhum lote encontrado.</td></tr>`;
+  }
+
+  function updatePeriodText(){
+    const f=getFilterState();
+    const now=new Date();
+    $("headerDate").textContent = now.toLocaleDateString("pt-BR")+" "+now.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+    const s=f.start?formatDate(f.start):"início";
+    const e=f.end?formatDate(f.end):"fim";
+    $("periodSubtitle").textContent = f.start||f.end ? `Período: ${s} a ${e}` : "Todos os registros da BASE";
+    $("resultStatus").innerHTML=`Registros analisados: <strong>${filteredRows.length.toLocaleString("pt-BR")}</strong>`;
+  }
+
+  function renderAll(){
+    populateBicoMachineSelect();
+    populateBicoProductSelect();
+    renderCards();
+    renderBreadcrumb();
+    renderDefectChart();
+    renderShiftPct();
+    renderProduct();
+    renderMachine();
+    renderMonth();
+    renderWeek();
+    renderBicoMonth();
+    renderBicoMachine();
+    renderBicoLeakMonth();
+    populateParetoEquipmentSelect();
+    renderParetoBico();
+    renderLots();
+    updatePeriodText();
+    populateDependentDefects();
+  }
+
+
+  function esc(v){return escapeHtml(v==null||v===""?"—":String(v));}
+
+  function openDetail(type, value, rows){
+    const total = rows.reduce((a,r)=>a+numeric(r.registroVisivel),0);
+    const products = new Set(rows.map(r=>r.product).filter(Boolean)).size;
+    const lots = new Set(rows.map(r=>r.lot).filter(Boolean)).size;
+    const machines = new Set(rows.map(r=>r.machine).filter(Boolean)).size;
+    const shifts = new Set(rows.map(r=>r.shift).filter(Boolean)).size;
+
+    $("detailTitle").textContent = value || "Detalhes";
+    $("detailContext").textContent = `${type} · ${rows.length.toLocaleString("pt-BR")} registros da BASE no contexto atual`;
+    $("detailSummary").innerHTML = `
+      <div class="detail-stat"><div class="label">NC / Registros visíveis</div><div class="value">${total.toLocaleString("pt-BR")}</div></div>
+      <div class="detail-stat"><div class="label">Produtos</div><div class="value">${products.toLocaleString("pt-BR")}</div></div>
+      <div class="detail-stat"><div class="label">Lotes</div><div class="value">${lots.toLocaleString("pt-BR")}</div></div>
+      <div class="detail-stat"><div class="label">Máquinas</div><div class="value">${machines.toLocaleString("pt-BR")}</div></div>
+      <div class="detail-stat"><div class="label">Turnos</div><div class="value">${shifts.toLocaleString("pt-BR")}</div></div>
+    `;
+
+    const body=$("detailTableBody");
+    if(!rows.length){
+      body.innerHTML='<tr><td colspan="11" style="text-align:center;padding:20px">Nenhum registro encontrado.</td></tr>';
+    }else{
+      body.innerHTML=rows.map(r=>`<tr>
+        <td>${esc(formatDate(r.revisionDate))}</td>
+        <td>${esc(r.product)}</td>
+        <td>${esc(formatDate(r.productionDate))}</td>
+        <td>${esc(r.machine)}</td>
+        <td>${r.shift?`Turno ${esc(r.shift)}`:"—"}</td>
+        <td>${esc(r.lot)}</td>
+        <td>${esc(r.n1)}</td>
+        <td>${esc(r.n2)}</td>
+        <td>${esc(r.n3)}</td>
+        <td>${esc(r.bico)}</td>
+        <td>${esc(r.observation)}</td>
+      </tr>`).join("");
+    }
+    $("detailFooter").textContent = `Exibindo ${rows.length.toLocaleString("pt-BR")} registros · Os dados são os registros da aba selecionada da planilha.`;
+    $("detailModal").classList.remove("hidden");
+    $("detailModal").setAttribute("aria-hidden","false");
+    document.body.style.overflow="hidden";
+  }
+
+  function closeDetail(){
+    $("detailModal").classList.add("hidden");
+    $("detailModal").setAttribute("aria-hidden","true");
+    document.body.style.overflow="";
+  }
+
+  function toast(msg){
+    const el=$("toast");el.textContent=msg;el.classList.add("show");
+    clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove("show"),2600);
+  }
+
+  async function readFile(file){
+    const data=await file.arrayBuffer();
+    const wb=XLSX.read(data,{type:"array",cellDates:true});
+    prepareWorkbook(wb,file.name);
+  }
+
+  function serializeData(){
+    return JSON.stringify(rawRows.map(r=>({
+      revisionDate:r.revisionDate?dateISO(r.revisionDate):null,month:r.month,year:r.year,product:r.product,
+      productionDate:r.productionDate?dateISO(r.productionDate):null,machine:r.machine,shift:r.shift,lot:r.lot,
+      bico:r.bico,n1:r.n1,n2:r.n2,n3:r.n3,registroVisivel:r.registroVisivel,bicoVisivel:r.bicoVisivel,week:r.week
+    })));
+  }
+
+  function serializeViewerState(){
+    const state = {
+      dateStart: $("dateStart")?.value || "",
+      dateEnd: $("dateEnd")?.value || "",
+      product: $("productFilter")?.value || "",
+      machine: $("machineFilter")?.value || "",
+      shift: $("shiftFilter")?.value || "",
+      lot: $("lotFilter")?.value || "",
+      n1: $("n1Filter")?.value || "",
+      n2: $("n2Filter")?.value || "",
+      n3: $("n3Filter")?.value || "",
+      hierarchy: Array.isArray(hierarchy) ? hierarchy.slice() : [],
+      weekChartMode,
+      bicoMachineSelected,
+      bicoProductSelected,
+      excludeNIBico,
+      paretoExcludeNI,
+      paretoEquipmentSelected,
+      weekStartDate,
+      weekEndDate,
+      weekAppliedStartDate,
+      weekAppliedEndDate
+    };
+    return JSON.stringify(state).replace(/</g,"\\u003c");
+  }
+
+  function generateViewerHtml(){
+    if(!rawRows.length){toast("Importe uma planilha antes de gerar o HTML.");return;}
+
+    /* O arquivo gerado é um visualizador independente: incorpora os dados
+       tratados e preserva os filtros atuais, mas não oferece importação,
+       geração de HTML ou geração de PDF ao destinatário. */
+    const current=document.documentElement.outerHTML;
+    const injection =
+      "<scr"+"ipt>"+
+      "window.__VIEWER_MODE__=true;"+
+      "window.__EMBEDDED_DATA__=" + serializeData() + ";"+
+      "window.__EMBEDDED_FILE__=" + JSON.stringify(currentFileName).replace(/</g,"\\u003c") + ";"+
+      "window.__EMBEDDED_FILTERS__=" + serializeViewerState() + ";"+
+      "</scr"+"ipt>"+
+      "<style id=\"viewer-mode-style\">"+
+      "html.viewer-mode .import-field,html.viewer-mode #saveBtn,html.viewer-mode #printBtn{display:none!important;}"+
+      "html.viewer-mode .sheet-picker{display:none!important;}"+
+      "</style>";
+    const viewerScript="<scr"+"ipt>(function(){document.documentElement.classList.add('viewer-mode');})();</scr"+"ipt>";
+    const updated=current.replace("</head>",injection+viewerScript+"</head>");
+    const blob=new Blob(["<!DOCTYPE html>\\n",updated],{type:"text/html;charset=utf-8"});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download="dashboard_nao_conformidades_contra_provas_visualizador.html";
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+    toast("HTML visualizador gerado com os dados tratados.");
+  }
+
+  function loadEmbeddedIfPresent(){
+    if(!window.__EMBEDDED_DATA__)return;
+    rawRows=window.__EMBEDDED_DATA__.map(x=>({...x,
+      revisionDate:parseDate(x.revisionDate),productionDate:parseDate(x.productionDate)
+    }));
+    currentFileName=window.__EMBEDDED_FILE__||"Dados incorporados";
+
+    populateFilters();
+    setDateBounds();
+
+    const fs=window.__EMBEDDED_FILTERS__;
+    if(fs){
+      if(typeof fs.dateStart==="string") $("dateStart").value=fs.dateStart;
+      if(typeof fs.dateEnd==="string") $("dateEnd").value=fs.dateEnd;
+      if(typeof fs.product==="string") $("productFilter").value=fs.product;
+      if(typeof fs.machine==="string") $("machineFilter").value=fs.machine;
+      if(typeof fs.shift==="string") $("shiftFilter").value=fs.shift;
+      if(typeof fs.lot==="string") $("lotFilter").value=fs.lot;
+      if(typeof fs.n1==="string") $("n1Filter").value=fs.n1;
+      if(typeof fs.n2==="string") $("n2Filter").value=fs.n2;
+      if(typeof fs.n3==="string") $("n3Filter").value=fs.n3;
+      hierarchy=Array.isArray(fs.hierarchy) ? fs.hierarchy.slice() : [];
+      weekChartMode=fs.weekChartMode==="line" ? "line" : "bar";
+      bicoMachineSelected=typeof fs.bicoMachineSelected==="string" ? fs.bicoMachineSelected : "";
+      bicoProductSelected=typeof fs.bicoProductSelected==="string" ? fs.bicoProductSelected : "";
+      excludeNIBico=!!fs.excludeNIBico;
+      paretoExcludeNI=!!fs.paretoExcludeNI;
+      paretoEquipmentSelected=typeof fs.paretoEquipmentSelected==="string" ? fs.paretoEquipmentSelected : "";
+      weekStartDate=typeof fs.weekStartDate==="string" ? fs.weekStartDate : weekStartDate;
+      weekEndDate=typeof fs.weekEndDate==="string" ? fs.weekEndDate : weekEndDate;
+      weekAppliedStartDate=typeof fs.weekAppliedStartDate==="string" ? fs.weekAppliedStartDate : weekAppliedStartDate;
+      weekAppliedEndDate=typeof fs.weekAppliedEndDate==="string" ? fs.weekAppliedEndDate : weekAppliedEndDate;
+      if($("weekStartDate")) $("weekStartDate").value=weekStartDate;
+      if($("weekEndDate")) $("weekEndDate").value=weekEndDate;
+      if($("excludeNIBico")) $("excludeNIBico").checked=excludeNIBico;
+      if($("paretoExcludeNI")) $("paretoExcludeNI").checked=paretoExcludeNI;
+    }
+
+    applyFilters();
+    $("fileStatus").innerHTML=`Dados incorporados: <strong>${escapeHtml(currentFileName)}</strong> · ${rawRows.length.toLocaleString("pt-BR")} registros`;
+  }
+
+  $("detailClose").addEventListener("click",closeDetail);
+  $("detailBackdrop").addEventListener("click",closeDetail);
+  document.addEventListener("keydown",e=>{if(e.key==="Escape")closeDetail();});
+
+  $("fileInput").addEventListener("change",async e=>{
+    const file=e.target.files?.[0];if(!file)return;
+    try{await readFile(file);}catch(err){console.error(err);toast(err.message||"Não foi possível ler a planilha.");}
+  });
+  $("sheetSelect").addEventListener("change",()=>{
+    if($("sheetSelect").value) loadSelectedSheet();
+  });
+  $("applyBtn").addEventListener("click",applyFilters);
+  $("clearBtn").addEventListener("click",resetFilters);
+  const PDF_CARDS = [
+    ["total","Total de NC","cardTotal"],
+    ["products","Produtos afetados","cardProducts"],
+    ["machines","Máquinas afetadas","cardMachines"],
+    ["lots","Lotes afetados","cardLots"],
+    ["bicos","Bicos com vazamento","cardBicos"],
+    ["shift","Turno com maior NC","cardShift"]
+  ];
+
+  const PDF_CHARTS = [
+    ["defect","Quantidade por tipo de NC"],
+    ["shiftPct","% de NC de vazamento por turno"],
+    ["product","Quantidade de NC por produto"],
+    ["machine","Registros por máquina"],
+    ["month","Tendência de NC por mês"],
+    ["week","NC por semana"],
+    ["bicoMonth","Bicos com vazamento por mês"],
+    ["leakage","Vazamentos por bico"],
+    ["pareto","Pareto de NC por equipamento"]
+  ];
+
+  function pdfPreviewDataUrl(id){
+    const canvasId={
+      defect:"defectChart",shiftPct:"shiftPctChart",product:"productChart",machine:"machineChart",
+      month:"monthChart",week:"weekChart",bicoMonth:"bicoMonthChart",leakage:"bicoMachineChart",pareto:"paretoBicoChart"
+    }[id];
+    const canvas=canvasId && document.getElementById(canvasId);
+    if(!canvas || !canvas.width || !canvas.height)return "";
+    try{return canvas.toDataURL("image/png");}catch(e){return "";}
+  }
+
+  function pdfCardPreview(id){
+    const card=document.querySelector(`.pdf-card[data-card-id="${CSS.escape(id)}"]`);
+    if(!card)return "";
+    try{
+      const title=card.querySelector('.k')?.textContent?.trim() || '';
+      const value=card.querySelector('.v')?.textContent?.trim() || '';
+      const sub=card.querySelector('.s')?.textContent?.trim() || '';
+      const cls=card.className || '';
+      const color=cls.includes('orange')?'#f28a16':cls.includes('purple')?'#7c4dff':cls.includes('green')?'#29935b':cls.includes('blue')?'#1467a8':'#d94a55';
+      const safe=v=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="280" height="86" viewBox="0 0 280 86">
+        <rect x="0.5" y="0.5" width="279" height="85" rx="9" fill="#ffffff" stroke="#dce4ea"/>
+        <rect x="0" y="0" width="5" height="86" rx="3" fill="${color}"/>
+        <circle cx="25" cy="43" r="14" fill="${color}" opacity=".12"/>
+        <circle cx="25" cy="43" r="6" fill="none" stroke="${color}" stroke-width="1.8"/>
+        <text x="48" y="22" font-family="Arial, sans-serif" font-size="9" font-weight="700" fill="#617286">${safe(title)}</text>
+        <text x="48" y="49" font-family="Arial, sans-serif" font-size="22" font-weight="800" fill="${color}">${safe(value)}</text>
+        <text x="48" y="67" font-family="Arial, sans-serif" font-size="8.5" fill="#748496">${safe(sub)}</text>
+      </svg>`;
+      return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+    }catch(e){return "";}
+  }
+
+  function populatePdfSelection(){
+    const list=$("pdfSelectList");
+    const cardsHtml=PDF_CARDS.map(([id,title])=>{
+      const preview=pdfCardPreview(id);
+      const visual=preview ? `<img class="pdf-card-preview" src="${preview}" alt="Prévia: ${escapeAttr(title)}">` : `<div class="pdf-preview-empty">Prévia indisponível</div>`;
+      return `<label class="pdf-select-item"><input type="checkbox" value="card:${id}" checked><span>${escapeHtml(title)}</span>${visual}</label>`;
+    }).join("");
+    const chartsHtml=PDF_CHARTS.map(([id,title])=>{
+      const preview=pdfPreviewDataUrl(id);
+      const visual=preview ? `<img class="pdf-preview" src="${preview}" alt="Prévia: ${escapeAttr(title)}">` : `<div class="pdf-preview-empty">Prévia indisponível</div>`;
+      return `<label class="pdf-select-item"><input type="checkbox" value="chart:${id}" checked><span>${escapeHtml(title)}</span>${visual}</label>`;
+    }).join("");
+    list.innerHTML=`<div class="pdf-select-section">Indicadores do topo</div><div class="pdf-select-card-row">${cardsHtml}</div><div class="pdf-select-section">Gráficos e análises</div>${chartsHtml}`;
+    updatePdfSelectionCount();
+  }
+
+  function updatePdfSelectionCount(){
+    const checked=[...document.querySelectorAll("#pdfSelectList input:checked")];
+    const cards=checked.filter(x=>x.value.startsWith("card:")).length;
+    const charts=checked.filter(x=>x.value.startsWith("chart:")).length;
+    $("pdfSelectCount").textContent=`${cards} card${cards===1?"":"s"} + ${charts} gráfico${charts===1?"":"s"} selecionado${cards+charts===1?"":"s"}`;
+    $("pdfGenerateBtn").disabled=checked.length===0;
+  }
+
+  function openPdfSelection(){
+    populatePdfSelection();
+    $("pdfSelectModal").classList.remove("hidden");
+    $("pdfSelectModal").setAttribute("aria-hidden","false");
+    document.body.style.overflow="hidden";
+  }
+
+  function closePdfSelection(){
+    $("pdfSelectModal").classList.add("hidden");
+    $("pdfSelectModal").setAttribute("aria-hidden","true");
+    document.body.style.overflow="";
+  }
+
+  function preparePdfPrint(){
+    document.querySelectorAll(".print-chart").forEach(panel=>panel.classList.remove("print-selected"));
+    document.querySelectorAll(".pdf-card").forEach(card=>card.classList.remove("print-card-selected"));
+    document.querySelectorAll(".pdf-print-snapshot").forEach(img=>img.remove());
+    document.querySelectorAll(".print-chart canvas").forEach(canvas=>canvas.style.display="");
+
+    const checked=[...document.querySelectorAll("#pdfSelectList input:checked")];
+    const selectedCharts=checked.filter(x=>x.value.startsWith("chart:")).map(x=>x.value.slice(6));
+    const selectedCards=checked.filter(x=>x.value.startsWith("card:")).map(x=>x.value.slice(5));
+
+    selectedCharts.forEach(id=>{
+      const panel=document.querySelector(`.print-chart[data-chart-id="${CSS.escape(id)}"]`);
+      if(panel)panel.classList.add("print-selected");
+    });
+    selectedCards.forEach(id=>{
+      const card=document.querySelector(`.pdf-card[data-card-id="${CSS.escape(id)}"]`);
+      if(card)card.classList.add("print-card-selected");
+    });
+    if(!checked.length){toast("Selecione pelo menos um item.");return false;}
+    closePdfSelection();
+    document.body.classList.add("pdf-print-mode");
+    return true;
+  }
+
+  function resizeChartsForPrint(){
+    document.querySelectorAll(".print-chart.print-selected .chart-wrap").forEach(wrap=>{
+      const rect=wrap.getBoundingClientRect();
+      if(rect.width<50 || rect.height<50)return;
+      const id=wrap.closest('.print-chart')?.dataset.chartId;
+      const chart=charts[id === 'leakage' ? 'bicoMachine' : id];
+      if(!chart)return;
+      try{
+        let w=Math.max(300,Math.floor(rect.width));
+        let h=Math.max(180,Math.floor(rect.height));
+        if(id==='shiftPct'){
+          const side=Math.min(w,h);
+          w=side;h=side;
+        }
+        // Renderiza o gráfico em resolução muito superior à área impressa.
+        // O PDF do navegador reduz a imagem para o tamanho da página A4;
+        // por isso o canvas é criado em 4x a densidade física, preservando
+        // nitidez dos textos, eixos, números, linhas e barras.
+        const previousDpr=chart.options.devicePixelRatio;
+        const previousAnimation=chart.options.animation;
+        chart.options.devicePixelRatio=4;
+        chart.options.animation=false;
+        chart.resize(w,h);
+        chart.update('none');
+        const dataUrl=chart.toBase64Image('image/png');
+        chart.options.devicePixelRatio=previousDpr;
+        chart.options.animation=previousAnimation;
+        if(dataUrl){
+          const img=document.createElement('img');
+          img.className='pdf-print-snapshot';
+          img.src=dataUrl;
+          img.alt='';
+          img.decoding='sync';
+          img.style.width=id==='shiftPct'?'82mm':'100%';
+          img.style.height=id==='shiftPct'?'82mm':'100%';
+          img.style.objectFit=id==='shiftPct'?'contain':'fill';
+          img.style.imageRendering='auto';
+          img.style.display='block';
+          if(id==='shiftPct')img.style.margin='0 auto';
+          wrap.appendChild(img);
+          const canvas=wrap.querySelector('canvas');
+          if(canvas)canvas.style.display='none';
+        }
+      }catch(e){console.warn('Falha ao preparar gráfico para PDF',id,e);}
+    });
+  }
+
+  $("pdfSelectBackdrop").addEventListener("click",closePdfSelection);
+  $("pdfSelectClose").addEventListener("click",closePdfSelection);
+  $("pdfSelectCancel").addEventListener("click",closePdfSelection);
+  $("pdfSelectList").addEventListener("change",updatePdfSelectionCount);
+  $("pdfSelectAll").addEventListener("click",()=>{
+    document.querySelectorAll("#pdfSelectList input").forEach(input=>input.checked=true);
+    updatePdfSelectionCount();
+  });
+  $("pdfSelectNone").addEventListener("click",()=>{
+    document.querySelectorAll("#pdfSelectList input").forEach(input=>input.checked=false);
+    updatePdfSelectionCount();
+  });
+  $("pdfGenerateBtn").addEventListener("click",()=>{
+    if(!preparePdfPrint())return;
+    // Primeiro aplica o layout de impressão; depois força cada canvas ao tamanho real do painel.
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      resizeChartsForPrint();
+      setTimeout(()=>{
+        resizeChartsForPrint();
+        window.print();
+      },180);
+    }));
+  });
+
+  $("printBtn").addEventListener("click",openPdfSelection);
+  window.addEventListener("afterprint",()=>{
+    document.body.classList.remove("pdf-print-mode");
+    document.querySelectorAll(".print-chart").forEach(panel=>panel.classList.remove("print-selected"));
+    document.querySelectorAll(".pdf-card").forEach(card=>card.classList.remove("print-card-selected"));
+    document.querySelectorAll(".pdf-print-snapshot").forEach(img=>img.remove());
+    document.querySelectorAll(".print-chart canvas").forEach(canvas=>{canvas.style.width="";canvas.style.height="";canvas.style.display="";});
+    Object.values(charts).forEach(chart=>{try{chart.options.devicePixelRatio=undefined;chart.resize();chart.update('none');}catch(e){}});
+  });
+
+  $("weekToggle").addEventListener("click",()=>{weekChartMode=weekChartMode==="bar"?"line":"bar";renderWeek();});
+  $("bicoMachineSelect").addEventListener("change",()=>{
+    if(globalMachine()){
+      $("bicoMachineSelect").value=globalMachine();
+      return;
+    }
+    bicoMachineSelected=$("bicoMachineSelect").value;
+    renderBicoMachine();
+    renderBicoLeakMonth();
+  });
+  $("bicoProductSelect").addEventListener("change",()=>{
+    if(globalProduct()){
+      $("bicoProductSelect").value=globalProduct();
+      return;
+    }
+    bicoProductSelected=$("bicoProductSelect").value;
+    renderBicoMachine();
+    renderBicoLeakMonth();
+  });
+  $("excludeNIBico").addEventListener("change",()=>{
+    excludeNIBico=$("excludeNIBico").checked;
+    renderBicoMachine();
+    renderBicoLeakMonth();
+  });
+
+  $("paretoEquipmentSelect").addEventListener("change",()=>{
+    paretoEquipmentSelected=$("paretoEquipmentSelect").value || "";
+    const effective=effectiveParetoEquipment();
+    $("paretoExcludeNI").disabled=!effective;
+    if(!effective) $("paretoExcludeNI").checked=false;
+    renderParetoBico();
+  });
+
+  $("paretoExcludeNI").addEventListener("change",()=>{
+    // O equipamento pode vir do filtro global do dashboard.
+    // Nesse caso paretoEquipmentSelected permanece vazio, mas o Pareto
+    // continua com um equipamento efetivo e o usuário deve poder excluir NI.
+    const effective=effectiveParetoEquipment();
+    if(!effective){
+      paretoExcludeNI=false;
+      $("paretoExcludeNI").checked=false;
+      return;
+    }
+    paretoExcludeNI=$("paretoExcludeNI").checked;
+    renderParetoBico();
+  });
+  $("weekStartDate").addEventListener("change",()=>{
+    weekStartDate=$("weekStartDate").value;
+    if(weekStartDate && weekEndDate && weekStartDate>weekEndDate){
+      weekEndDate=weekStartDate;
+      $("weekEndDate").value=weekEndDate;
+    }
+  });
+  $("weekEndDate").addEventListener("change",()=>{
+    weekEndDate=$("weekEndDate").value;
+    if(weekStartDate && weekEndDate && weekEndDate<weekStartDate){
+      weekStartDate=weekEndDate;
+      $("weekStartDate").value=weekStartDate;
+    }
+  });
+  $("weekApplyFilter").addEventListener("click",()=>{
+    if(weekStartDate && weekEndDate && weekStartDate>weekEndDate){
+      const tmp=weekStartDate; weekStartDate=weekEndDate; weekEndDate=tmp;
+      $("weekStartDate").value=weekStartDate;
+      $("weekEndDate").value=weekEndDate;
+    }
+    weekAppliedStartDate=weekStartDate;
+    weekAppliedEndDate=weekEndDate;
+    updateWeekPrintNote();
+    renderWeek();
+  });
+
+  function updateWeekPrintNote(){
+    const start=weekAppliedStartDate||weekStartDate;
+    const end=weekAppliedEndDate||weekEndDate;
+    const el=$("weekPrintNote");
+    if(!el)return;
+    if(start||end){
+      const s=start?formatDate(parseDate(start)):"início";
+      const e=end?formatDate(parseDate(end)):"fim";
+      el.textContent=`Período aplicado: ${s} a ${e}`;
+    }else{
+      el.textContent="Período aplicado: toda a base";
+    }
+  }
+
+  function openNativeDatePicker(id){
+    const input=$(id);
+    if(!input)return;
+    try{
+      if(typeof input.showPicker==="function") input.showPicker();
+      else { input.focus(); input.click(); }
+    }catch(e){
+      input.focus();
+      input.click();
+    }
+  }
+  $("weekStartPicker").addEventListener("click",(e)=>{
+    e.preventDefault();
+    openNativeDatePicker("weekStartDate");
+  });
+  $("weekEndPicker").addEventListener("click",(e)=>{
+    e.preventDefault();
+    openNativeDatePicker("weekEndDate");
+  });
+
+  // Clicking the date input itself also opens the calendar.
+  // Keep the native HTML date picker. The browser opens its calendar when the
+  // input is clicked; showPicker is only used as a fallback from a direct click.
+  $("weekStartDate").addEventListener("mousedown",(e)=>{
+    if(e.button!==0)return;
+    const input=e.currentTarget;
+    setTimeout(()=>{
+      try{
+        if(document.activeElement===input && typeof input.showPicker==="function") input.showPicker();
+      }catch(err){}
+    },0);
+  });
+  $("weekEndDate").addEventListener("mousedown",(e)=>{
+    if(e.button!==0)return;
+    const input=e.currentTarget;
+    setTimeout(()=>{
+      try{
+        if(document.activeElement===input && typeof input.showPicker==="function") input.showPicker();
+      }catch(err){}
+    },0);
+  });
+  $("saveBtn").addEventListener("click",generateViewerHtml);
+  ["productFilter","machineFilter","shiftFilter","lotFilter","n1Filter","n2Filter","n3Filter"].forEach(id=>{
+    $(id).addEventListener("change",()=>{
+      if(id==="n1Filter"){hierarchy=[]; if($(id).value)hierarchy=[$(id).value];}
+      if(id==="n2Filter"){hierarchy=hierarchy.slice(0,1); if($(id).value)hierarchy.push($(id).value);}
+      if(id==="n3Filter"){hierarchy=hierarchy.slice(0,2); if($(id).value)hierarchy.push($(id).value);}
+      if(id==="n1Filter"||id==="n2Filter") populateDependentDefects();
+      if(id==="n2Filter") populateDependentN3();
+      applyFilters();
+    });
+  });
+  ["lotSearch","lotLimit"].forEach(id=>$(id).addEventListener(id==="lotSearch"?"input":"change",renderLots));
+
+  // embedded data is intentionally optional: the normal workflow is importing the XLSX BASE.
+  loadEmbeddedIfPresent();
+})();
+</script>
+</body>
+</html>
