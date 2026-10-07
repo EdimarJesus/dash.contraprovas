@@ -120,7 +120,14 @@ button:hover{transform:translateY(-1px)}
 .ni-toggle input:checked+.ni-check::after{content:"✓";color:#fff;font-size:11px;font-weight:900;line-height:1}
 .leakage-analysis-panel{grid-column:1/-1}
 .leakage-main-head{align-items:center}
-.leakage-filters{flex-wrap:nowrap}
+.leakage-main-head>div:first-child{flex:0 0 auto;min-width:150px}
+.leakage-scope-note{display:none!important}
+.leakage-filters{flex:1;justify-content:flex-start;flex-wrap:nowrap;margin-left:16px;gap:5px;min-width:0}
+.leakage-filters .mini-filter-label{margin-left:2px}
+.leakage-filters .mini-filter-label:first-of-type{margin-left:0}
+.leakage-filters .mini-filter{min-width:125px;max-width:190px}
+.leakage-filters .product-filter{min-width:175px;max-width:225px}
+
 .leakage-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:4px 0 12px}
 .leak-kpi{min-height:68px;border:1px solid #e1e7ec;border-radius:13px;background:linear-gradient(180deg,#fff,#f8fafc);display:flex;align-items:center;gap:10px;padding:9px 12px}
 .leak-kpi-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;flex:0 0 auto}
@@ -133,6 +140,13 @@ button:hover{transform:translateY(-1px)}
 .leakage-month-wrap{height:300px!important}
 .subchart-title{font-size:11px;color:#2a4b64;font-weight:900;padding:3px 4px 4px}
 
+
+.leak-date-range{display:flex;align-items:center;gap:4px}
+.leak-date-range input{height:30px;width:108px;border:1px solid #cfd9e1;border-radius:8px;background:#fff;color:#27445b;font-size:10px;font-weight:700;padding:0 7px;cursor:pointer}
+.leak-date-range input:focus{outline:none;border-color:#0d5ca8;box-shadow:0 0 0 2px rgba(13,92,168,.10)}
+.leak-date-range span{font-size:9px;color:#71808c;font-weight:750}
+.leak-filter-btn{height:30px;min-width:70px;border:1px solid #0d5ca8;border-radius:8px;background:#0d5ca8;color:#fff;padding:0 10px;font-size:10px;font-weight:900;cursor:pointer;box-shadow:0 2px 6px rgba(13,92,168,.14);display:inline-flex;align-items:center;justify-content:center;gap:5px;flex-wrap:nowrap;white-space:nowrap}
+.leak-filter-btn:hover{background:#084b8b}.leak-clear-btn{height:30px;min-width:94px;border:1px solid #d2dce5;border-radius:8px;background:#eef3f7;color:#274056;padding:0 9px;font-size:10px;font-weight:850;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:5px;flex-wrap:nowrap;white-space:nowrap}.leak-clear-btn:hover{background:#e2ebf1}.leak-filter-btn span:first-child,.leak-clear-btn span:first-child{font-size:13px;line-height:1;font-weight:900}
 .mini-filter-label{font-size:9px;color:#71808c;font-weight:850;text-transform:uppercase;letter-spacing:.35px}.mini-filter{height:30px;min-width:150px;max-width:240px;border:1px solid #cfd9e1;border-radius:8px;background:#fff;color:#27445b;font-size:10px;font-weight:750;padding:0 8px}.chart-toggle{height:27px;padding:0 9px;border:1px solid #d3dde5;border-radius:8px;background:#f3f7fa;color:#23445f;font-size:10px;font-weight:850;display:flex;align-items:center;gap:5px;cursor:pointer;box-shadow:none}.chart-toggle:hover{background:#e8f0f5}.chart-toggle span:first-child{font-size:15px;line-height:1;color:#0d5ca8}
 .panel-title{font-size:14px;font-weight:850;color:#3d4a55}
 .panel-note{font-size:10px;color:#7b8792;text-align:right}
@@ -175,8 +189,9 @@ tr:hover td{background:#f8fafb}
   .panel.span-4,.panel.span-5,.panel.span-6,.panel.span-7,.panel.span-8{grid-column:span 6}
 }
 @media(max-width:760px){
+  .leakage-filters{flex-wrap:wrap}.leak-date-range{width:auto}.leak-date-range input{width:112px}
   .week-actions{width:100%;justify-content:flex-start;flex-wrap:wrap}.week-date-filter{width:100%;flex-wrap:wrap}.date-picker-control input{width:118px}.week-filter-btn{padding:0 9px}
-  .leakage-kpis{grid-template-columns:repeat(2,1fr)}.leakage-grid{grid-template-columns:1fr}.leakage-filters{width:100%;justify-content:flex-start}.leakage-main-head{align-items:flex-start}.leak-kpi strong{max-width:150px}
+  .leakage-kpis{grid-template-columns:repeat(2,1fr)}.leakage-grid{grid-template-columns:1fr}.leakage-filters{width:100%;justify-content:flex-start;flex-wrap:wrap}.leakage-main-head{align-items:flex-start}.leak-kpi strong{max-width:150px}
   .panel-actions{flex-wrap:wrap}.mini-filter{min-width:130px}
   .panel-actions{gap:5px}.panel-note{max-width:140px}.chart-toggle{padding:0 7px}
   .import-file{width:145px}.sheet-picker{width:220px;min-width:220px}
@@ -238,6 +253,7 @@ tr:hover td{background:#f8fafb}
 .detail-table tbody tr:hover td{background:#f7fafc}
 .detail-footer{padding:9px 18px 15px;color:#6f7d88;font-size:10px;text-align:right}
 @media(max-width:760px){
+  .leakage-main-head>div:first-child{width:100%;min-width:0}.leakage-filters{margin-left:0;width:100%;justify-content:flex-start;flex-wrap:wrap}.leakage-filters .mini-filter{min-width:130px}.leakage-filters .product-filter{min-width:160px}.leak-date-range{flex-wrap:nowrap}.leak-clear-btn{min-width:94px}
   .leakage-kpis{grid-template-columns:repeat(2,1fr)}.leakage-grid{grid-template-columns:1fr}.leakage-filters{width:100%;justify-content:flex-start}.leakage-main-head{align-items:flex-start}.leak-kpi strong{max-width:150px}
   .detail-modal{padding:8px}.detail-dialog{width:100%;max-height:96vh}.detail-summary{grid-template-columns:repeat(2,1fr)}
 }
@@ -425,13 +441,23 @@ tr:hover td{background:#f8fafb}
       <div class="panel-head leakage-main-head">
         <div>
           <div class="panel-title">Vazamentos por bico</div>
-          <div class="panel-note" id="bicoAnalysisTitle">Selecione uma máquina e, se desejar, um produto.</div>
+          <div class="panel-note leakage-scope-note" id="bicoAnalysisTitle"></div>
         </div>
         <div class="panel-actions leakage-filters">
           <label class="mini-filter-label" for="bicoMachineSelect">Máquina</label>
-          <select id="bicoMachineSelect" class="mini-filter"><option value="">Selecione uma máquina</option></select>
+          <select id="bicoMachineSelect" class="mini-filter"><option value="">Todas as máquinas</option></select>
           <label class="mini-filter-label" for="bicoProductSelect">Produto</label>
           <select id="bicoProductSelect" class="mini-filter product-filter"><option value="">Todos os produtos</option></select>
+          <label class="mini-filter-label" for="bicoWeekSelect">Semana</label>
+          <select id="bicoWeekSelect" class="mini-filter"><option value="">Todas as semanas</option></select>
+          <label class="mini-filter-label">Período</label>
+          <div class="leak-date-range">
+            <input type="date" id="bicoStartDate" title="Data inicial do vazamento">
+            <span>até</span>
+            <input type="date" id="bicoEndDate" title="Data final do vazamento">
+          </div>
+          <button type="button" class="leak-filter-btn" id="bicoApplyDateFilter" title="Aplicar período ao gráfico"><span>⌕</span><span>Filtrar</span></button>
+          <button type="button" class="leak-clear-btn" id="bicoClearFilters" title="Limpar filtros deste card"><span>×</span><span>Limpar filtros</span></button>
           <label class="ni-toggle" title="Excluir bicos não identificados (NI) da análise">
             <input type="checkbox" id="excludeNIBico">
             <span class="ni-check"></span><span>Excluir NI</span>
@@ -599,6 +625,11 @@ tr:hover td{background:#f8fafb}
   let weekChartMode = "bar";
   let bicoMachineSelected = "";
   let bicoProductSelected = "";
+  let bicoWeekSelected = "";
+  let bicoStartDate = "";
+  let bicoEndDate = "";
+  let bicoAppliedStartDate = "";
+  let bicoAppliedEndDate = "";
   let excludeNIBico = false;
   let paretoExcludeNI = false;
   let paretoEquipmentSelected = "";
@@ -1220,11 +1251,22 @@ tr:hover td{background:#f8fafb}
     }
   }
 
+  function populateBicoWeekSelect(){
+    const select=$("bicoWeekSelect");
+    const current=bicoWeekSelected;
+    const weeks=[...new Set(rawRows.map(r=>normalize(r.week)).filter(Boolean))]
+      .sort((a,b)=>a.localeCompare(b,"pt-BR",{numeric:true}));
+    select.innerHTML='<option value="">Todas as semanas</option>'+
+      weeks.map(w=>`<option value="${escapeAttr(w)}">${escapeHtml(w)}</option>`).join("");
+    if(weeks.includes(current)) select.value=current;
+    else { bicoWeekSelected=""; select.value=""; }
+  }
+
   function populateBicoMachineSelect(){
     const select=$("bicoMachineSelect");
     const current=bicoMachineSelected;
     const machines=[...new Set(rawRows.map(r=>r.machine).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"pt-BR",{numeric:true}));
-    select.innerHTML='<option value="">Selecione uma máquina</option>'+machines.map(m=>`<option value="${escapeAttr(m)}">${escapeHtml(m)}</option>`).join("");
+    select.innerHTML='<option value="">Todas as máquinas</option>'+machines.map(m=>`<option value="${escapeAttr(m)}">${escapeHtml(m)}</option>`).join("");
     const g=globalMachine();
     if(g && machines.includes(g)){
       select.value=g;
@@ -1237,50 +1279,55 @@ tr:hover td{background:#f8fafb}
 
 
 
-  function renderBicoMachine(){
-    const selectedMachine=effectiveBicoMachine();
-    const selectedProduct=effectiveBicoProduct();
 
-    setEmpty("bicoMachineEmpty",!selectedMachine);
-    destroyChart("bicoMachine");
+  function bicoRowDateKey(row){
+    const d=row.revisionDate instanceof Date ? row.revisionDate : parseDate(row.revisionDate);
+    if(!d || Number.isNaN(d.getTime())) return "";
+    return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+  }
 
-    if(!selectedMachine){
-      $("bicoMachineNote").textContent=selectedProduct
-        ? `Produto selecionado: ${selectedProduct}. Escolha uma máquina para ver os bicos com vazamento.`
-        : "Escolha uma máquina e, se desejar, um produto para visualizar todos os bicos com vazamento.";
-      $("bicoAnalysisTitle").textContent="Selecione uma máquina e, se desejar, um produto.";
-      $("leakTotal").textContent="0";
-      $("leakBicos").textContent="0";
-      $("leakTopBico").textContent="—";
-      $("leakTopShare").textContent="0%";
-      $("bicoMachineWrap").style.height="300px";
-      return;
-    }
-
-    const source=filteredRows.filter(r=>
-      r.machine===selectedMachine &&
+  function getBicoAnalysisRows(selectedMachine, selectedProduct){
+    return filteredRows.filter(r=>
+      (!selectedMachine || r.machine===selectedMachine) &&
       (!selectedProduct || r.product===selectedProduct) &&
+      (!bicoWeekSelected || normalize(r.week)===bicoWeekSelected) &&
+      (!bicoAppliedStartDate || !bicoRowDateKey(r) || bicoRowDateKey(r)>=bicoAppliedStartDate) &&
+      (!bicoAppliedEndDate || !bicoRowDateKey(r) || bicoRowDateKey(r)<=bicoAppliedEndDate) &&
       (!excludeNIBico || !isNIValue(r.bico)) &&
       numeric(r.bicoVisivel)>0
     );
+  }
 
+  function renderBicoMachine(){
+    const selectedMachine=effectiveBicoMachine();
+    const selectedProduct=effectiveBicoProduct();
+    destroyChart("bicoMachine");
+
+    const source=getBicoAnalysisRows(selectedMachine,selectedProduct);
     const map=new Map();
     source.forEach(r=>{
       const bico=r.bico || r.bicoPadronizado || "Bico não informado";
       if(!map.has(bico)) map.set(bico,0);
       map.set(bico,map.get(bico)+numeric(r.bicoVisivel));
     });
-
     const entries=[...map.entries()].sort((a,b)=>b[1]-a[1]);
 
     setEmpty("bicoMachineEmpty",entries.length===0);
+    const scopeText=selectedMachine && selectedProduct
+      ? `Máquina ${selectedMachine} · Produto ${selectedProduct}`
+      : selectedMachine
+        ? `Máquina ${selectedMachine} · Todos os produtos`
+        : selectedProduct
+          ? `Todas as máquinas · Produto ${selectedProduct}`
+          : "Todas as máquinas · Todos os produtos";
+    const suffix=
+      (bicoWeekSelected?` · ${bicoWeekSelected}`:"")+
+      (bicoAppliedStartDate||bicoAppliedEndDate?` · ${bicoAppliedStartDate||"início"} a ${bicoAppliedEndDate||"fim"}`:"")+
+      (excludeNIBico?" · NI excluído":"");
+    $("bicoAnalysisTitle").textContent="";
+
     if(!entries.length){
-      $("bicoMachineNote").textContent=selectedProduct
-        ? `Nenhum vazamento encontrado na máquina ${selectedMachine} para o produto ${selectedProduct}.`
-        : `Nenhum vazamento encontrado na máquina ${selectedMachine}.`;
-      $("bicoAnalysisTitle").textContent=selectedProduct
-        ? `Máquina ${selectedMachine} · Produto ${selectedProduct}`
-        : `Máquina ${selectedMachine} · Todos os produtos`;
+      $("bicoMachineNote").textContent=`Nenhum vazamento encontrado para ${scopeText}.`;
       $("leakTotal").textContent="0";
       $("leakBicos").textContent="0";
       $("leakTopBico").textContent="—";
@@ -1289,144 +1336,75 @@ tr:hover td{background:#f8fafb}
       return;
     }
 
-    // Show every bico found for the selected machine/product; chart grows as needed.
     const rowHeight=31;
     const chartHeight=Math.max(300,entries.length*rowHeight+80);
-    $("bicoMachineWrap").style.height=`${Math.min(900,chartHeight)}px`;
+    $("bicoMachineWrap").style.height=`${Math.min(1200,chartHeight)}px`;
 
     const labels=entries.map(x=>x[0]);
     const values=entries.map(x=>x[1]);
-
     const totalLeak=values.reduce((a,v)=>a+numeric(v),0);
-    const topValue=values[0] || 0;
-    const topShare=totalLeak ? (topValue/totalLeak)*100 : 0;
+    const topValue=values[0]||0;
+    const topShare=totalLeak?(topValue/totalLeak)*100:0;
     $("leakTotal").textContent=totalLeak.toLocaleString("pt-BR");
     $("leakBicos").textContent=entries.length.toLocaleString("pt-BR");
-    $("leakTopBico").textContent=labels[0] || "—";
+    $("leakTopBico").textContent=labels[0]||"—";
     $("leakTopShare").textContent=topShare.toLocaleString("pt-BR",{minimumFractionDigits:1,maximumFractionDigits:1})+"%";
-
-    const analysisTitle=selectedProduct
-      ? `Máquina ${selectedMachine} · Produto ${selectedProduct}`
-      : `Máquina ${selectedMachine} · Todos os produtos`;
-    $("bicoAnalysisTitle").textContent=excludeNIBico ? analysisTitle+" · NI excluído" : analysisTitle;
-    $("bicoMachineNote").textContent=selectedProduct
-      ? `Máquina ${selectedMachine} · Produto ${selectedProduct} · ${entries.length} bico(s) com vazamento.`
-      : `Máquina ${selectedMachine} · Todos os produtos · ${entries.length} bico(s) com vazamento.`;
+    const periodNote=(bicoAppliedStartDate||bicoAppliedEndDate)
+      ? ` · ${bicoAppliedStartDate||"início"} a ${bicoAppliedEndDate||"fim"}`
+      : "";
+    $("bicoMachineNote").textContent=`${scopeText}${bicoWeekSelected?` · ${bicoWeekSelected}`:""}${periodNote} · ${entries.length} bico(s) com vazamento${excludeNIBico?" · NI excluído":""}.`;
 
     charts.bicoMachine=new Chart($("bicoMachineChart").getContext("2d"),{
       type:"bar",
-      data:{labels,datasets:[{
-        label:"Bicos com vazamento",
-        data:values,
-        backgroundColor:"rgba(181,31,42,.70)",
-        borderColor:"#b51f2a",
-        borderWidth:1,
-        borderRadius:6
-      }]},
-      options:{
-        indexAxis:"y",
-        responsive:true,
-        maintainAspectRatio:false,
-        layout:{padding:{top:10,right:58,left:4,bottom:8}},
+      data:{labels,datasets:[{label:"Bicos com vazamento",data:values,backgroundColor:"rgba(181,31,42,.70)",borderColor:"#b51f2a",borderWidth:1,borderRadius:6}]},
+      options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,layout:{padding:{top:10,right:58,left:4,bottom:8}},
         plugins:{
-          datalabels:{
-            display:true,
-            color:"#17334d",
-            anchor:"end",
-            align:"right",
-            offset:7,
-            clip:false,
-            clamp:true,
-            font:{size:10,weight:"900"},
-            formatter:v=>Number(v).toLocaleString("pt-BR")
-          },
-          legend:{display:false},
-          tooltip:{callbacks:{label:c=>`Bicos com vazamento: ${Number(c.raw).toLocaleString("pt-BR")}`}}
+          datalabels:{display:true,color:"#17334d",anchor:"end",align:"right",offset:7,clip:false,clamp:true,font:{size:10,weight:"900"},formatter:v=>Number(v).toLocaleString("pt-BR")},
+          legend:{display:false},tooltip:{callbacks:{label:c=>`Bicos com vazamento: ${Number(c.raw).toLocaleString("pt-BR")}`}}
         },
-        scales:{
-          x:{beginAtZero:true,grid:{color:"rgba(80,100,120,.10)"},ticks:{font:{size:9},precision:0}},
-          y:{grid:{display:false},ticks:{font:{size:9}}}
-        },
+        scales:{x:{beginAtZero:true,grid:{color:"rgba(80,100,120,.10)"},ticks:{font:{size:9},precision:0}},y:{grid:{display:false},ticks:{font:{size:9}}}},
         onClick:(evt,els)=>{
           if(!els.length)return;
           const bico=labels[els[0].index];
           const rows=source.filter(r=>(r.bico||r.bicoPadronizado||"Bico não informado")===bico);
-          openDetail(
-            "Máquina / Bico",
-            `${selectedMachine} · ${bico}${selectedProduct ? ` · ${selectedProduct}` : ""}`,
-            rows
-          );
+          const detailTitle=selectedMachine && selectedProduct
+            ? `${selectedMachine} · ${bico} · ${selectedProduct}`
+            : selectedMachine
+              ? `${selectedMachine} · ${bico}`
+              : selectedProduct
+                ? `Todas as máquinas · ${bico} · ${selectedProduct}`
+                : `Todas as máquinas · ${bico}`;
+          openDetail("Vazamentos por bico",detailTitle,rows);
         }
       }
     });
   }
 
-
-
   function renderBicoLeakMonth(){
     const selectedMachine=effectiveBicoMachine();
     const selectedProduct=effectiveBicoProduct();
     destroyChart("bicoLeakMonth");
-
-    if(!selectedMachine){
-      setEmpty("bicoLeakMonthEmpty",true);
-      return;
-    }
-
-    const source=filteredRows.filter(r=>
-      r.machine===selectedMachine &&
-      (!selectedProduct || r.product===selectedProduct) &&
-      (!excludeNIBico || !isNIValue(r.bico)) &&
-      numeric(r.bicoVisivel)>0
-    );
-
+    const source=getBicoAnalysisRows(selectedMachine,selectedProduct);
     const map=new Map();
     source.forEach(r=>{
-      const month=r.month || "Sem mês";
+      const month=r.month||"Sem mês";
       map.set(month,(map.get(month)||0)+numeric(r.bicoVisivel));
     });
-
     const entries=[...map.entries()];
     setEmpty("bicoLeakMonthEmpty",entries.length===0);
     if(!entries.length)return;
-
     const labels=entries.map(x=>x[0]);
     const values=entries.map(x=>x[1]);
-
     charts.bicoLeakMonth=new Chart($("bicoLeakMonthChart").getContext("2d"),{
       type:"line",
-      data:{labels,datasets:[{
-        label:"Vazamentos",
-        data:values,
-        borderColor:"#b51f2a",
-        backgroundColor:"rgba(181,31,42,.10)",
-        borderWidth:2.5,
-        fill:true,
-        tension:.28,
-        pointRadius:4,
-        pointHoverRadius:6
-      }]},
-      options:{
-        responsive:true,
-        maintainAspectRatio:false,
-        layout:{padding:{top:28,right:22,left:4,bottom:4}},
-        plugins:{
-          datalabels:{display:true,color:"#17334d",anchor:"end",align:"top",offset:5,clip:false,clamp:true,font:{size:10,weight:"900"},formatter:v=>Number(v).toLocaleString("pt-BR")},
-          legend:{display:false},
-          tooltip:{callbacks:{label:c=>`Vazamentos: ${Number(c.raw).toLocaleString("pt-BR")}`}}
-        },
-        scales:{
-          x:{grid:{display:false},ticks:{font:{size:9}}},
-          y:{beginAtZero:true,grid:{color:"rgba(80,100,120,.10)"},ticks:{font:{size:9},precision:0}}
-        },
+      data:{labels,datasets:[{label:"Vazamentos",data:values,borderColor:"#b51f2a",backgroundColor:"rgba(181,31,42,.10)",borderWidth:2.5,fill:true,tension:.28,pointRadius:4,pointHoverRadius:6}]},
+      options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:28,right:22,left:4,bottom:4}},
+        plugins:{datalabels:{display:true,color:"#17334d",anchor:"end",align:"top",offset:5,clip:false,clamp:true,font:{size:10,weight:"900"},formatter:v=>Number(v).toLocaleString("pt-BR")},legend:{display:false},tooltip:{callbacks:{label:c=>`Vazamentos: ${Number(c.raw).toLocaleString("pt-BR")}`}}},
+        scales:{x:{grid:{display:false},ticks:{font:{size:9}}},y:{beginAtZero:true,grid:{color:"rgba(80,100,120,.10)"},ticks:{font:{size:9},precision:0}}},
         onClick:(evt,els)=>{
           if(!els.length)return;
           const month=labels[els[0].index];
-          openDetail(
-            "Mês / Vazamentos",
-            `${selectedMachine} · ${month}${selectedProduct ? ` · ${selectedProduct}` : ""}`,
-            source.filter(r=>r.month===month)
-          );
+          openDetail("Mês / Vazamentos",month,source.filter(r=>r.month===month));
         }
       }
     });
@@ -1702,6 +1680,7 @@ tr:hover td{background:#f8fafb}
   function renderAll(){
     populateBicoMachineSelect();
     populateBicoProductSelect();
+    populateBicoWeekSelect();
     renderCards();
     renderBreadcrumb();
     renderDefectChart();
@@ -1853,6 +1832,11 @@ tr:hover td{background:#f8fafb}
       weekChartMode,
       bicoMachineSelected,
       bicoProductSelected,
+      bicoWeekSelected,
+      bicoStartDate,
+      bicoEndDate,
+      bicoAppliedStartDate,
+      bicoAppliedEndDate,
       excludeNIBico,
       paretoExcludeNI,
       paretoEquipmentSelected,
@@ -1918,6 +1902,11 @@ tr:hover td{background:#f8fafb}
       weekChartMode=fs.weekChartMode==="line" ? "line" : "bar";
       bicoMachineSelected=typeof fs.bicoMachineSelected==="string" ? fs.bicoMachineSelected : "";
       bicoProductSelected=typeof fs.bicoProductSelected==="string" ? fs.bicoProductSelected : "";
+      bicoWeekSelected=typeof fs.bicoWeekSelected==="string" ? fs.bicoWeekSelected : "";
+      bicoStartDate=typeof fs.bicoStartDate==="string" ? fs.bicoStartDate : bicoStartDate;
+      bicoEndDate=typeof fs.bicoEndDate==="string" ? fs.bicoEndDate : bicoEndDate;
+      bicoAppliedStartDate=typeof fs.bicoAppliedStartDate==="string" ? fs.bicoAppliedStartDate : bicoAppliedStartDate;
+      bicoAppliedEndDate=typeof fs.bicoAppliedEndDate==="string" ? fs.bicoAppliedEndDate : bicoAppliedEndDate;
       excludeNIBico=!!fs.excludeNIBico;
       paretoExcludeNI=!!fs.paretoExcludeNI;
       paretoEquipmentSelected=typeof fs.paretoEquipmentSelected==="string" ? fs.paretoEquipmentSelected : "";
@@ -2161,6 +2150,62 @@ tr:hover td{background:#f8fafb}
       return;
     }
     bicoProductSelected=$("bicoProductSelect").value;
+    renderBicoMachine();
+    renderBicoLeakMonth();
+  });
+  $("bicoWeekSelect").addEventListener("change",()=>{
+    bicoWeekSelected=$("bicoWeekSelect").value;
+    renderBicoMachine();
+    renderBicoLeakMonth();
+  });
+
+  $("bicoStartDate").addEventListener("change",()=>{
+    bicoStartDate=$("bicoStartDate").value;
+    if(bicoStartDate && bicoEndDate && bicoStartDate>bicoEndDate){
+      bicoEndDate=bicoStartDate;
+      $("bicoEndDate").value=bicoEndDate;
+    }
+  });
+
+  $("bicoEndDate").addEventListener("change",()=>{
+    bicoEndDate=$("bicoEndDate").value;
+    if(bicoStartDate && bicoEndDate && bicoEndDate<bicoStartDate){
+      bicoStartDate=bicoEndDate;
+      $("bicoStartDate").value=bicoStartDate;
+    }
+  });
+
+  $("bicoApplyDateFilter").addEventListener("click",()=>{
+    if(bicoStartDate && bicoEndDate && bicoStartDate>bicoEndDate){
+      const tmp=bicoStartDate;
+      bicoStartDate=bicoEndDate;
+      bicoEndDate=tmp;
+      $("bicoStartDate").value=bicoStartDate;
+      $("bicoEndDate").value=bicoEndDate;
+    }
+    bicoAppliedStartDate=bicoStartDate;
+    bicoAppliedEndDate=bicoEndDate;
+    renderBicoMachine();
+    renderBicoLeakMonth();
+  });
+
+  $("bicoClearFilters").addEventListener("click",()=>{
+    bicoMachineSelected="";
+    bicoProductSelected="";
+    bicoWeekSelected="";
+    bicoStartDate="";
+    bicoEndDate="";
+    bicoAppliedStartDate="";
+    bicoAppliedEndDate="";
+    excludeNIBico=false;
+
+    $("bicoMachineSelect").value="";
+    $("bicoProductSelect").value="";
+    $("bicoWeekSelect").value="";
+    $("bicoStartDate").value="";
+    $("bicoEndDate").value="";
+    $("excludeNIBico").checked=false;
+
     renderBicoMachine();
     renderBicoLeakMonth();
   });
